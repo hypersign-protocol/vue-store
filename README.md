@@ -6,7 +6,9 @@ Vue Store of Hypersign Identity Network
 
 To import this repository at `hid-node` repository, run the following from `hid-node` dir:
 
-```git subtree add -P vue https://github.com/hypersign-protocol/vue-store.git main```
+```
+git subtree add -P vue https://github.com/hypersign-protocol/vue-store.git main
+```
 
 ## App UI
 
