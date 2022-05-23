@@ -20,6 +20,33 @@ export interface RpcStatus {
   details?: ProtobufAny[];
 }
 
+export interface SsiClaim {
+  id?: string;
+  currentStatus?: string;
+  statusReason?: string;
+}
+
+export interface SsiCredential {
+  claim?: SsiClaim;
+  issuer?: string;
+  issued?: string;
+  proof?: SsiCredentialProof;
+}
+
+export interface SsiCredentialProof {
+  type?: string;
+  created?: string;
+  verificationMethod?: string;
+  proofPurpose?: string;
+  proofValue?: string;
+}
+
+export interface SsiCredentialStatus {
+  claim?: SsiClaim;
+  issuer?: string;
+  issued?: string;
+}
+
 export interface SsiDid {
   context?: string[];
   id?: string;
@@ -35,7 +62,7 @@ export interface SsiDid {
 }
 
 export interface SsiDidResolutionResponse {
-  AtContext?: string;
+  _at_context?: string;
   didDocument?: SsiDid;
   didDocumentMetadata?: SsiMetadata;
   didResolutionMetadata?: SsiDidResolveMeta;
@@ -68,6 +95,11 @@ export interface SsiMsgDeactivateDIDResponse {
   id?: string;
 }
 
+export interface SsiMsgRegisterCredentialStatusResponse {
+  /** @format uint64 */
+  id?: string;
+}
+
 export interface SsiMsgUpdateDIDResponse {
   updateId?: string;
 }
@@ -77,6 +109,10 @@ export interface SsiMsgUpdateDIDResponse {
  */
 export type SsiParams = object;
 
+export interface SsiQueryCredentialResponse {
+  credStatus?: SsiCredential;
+}
+
 export interface SsiQueryDidParamResponse {
   /** @format uint64 */
   totalDidCount?: string;
@@ -84,7 +120,7 @@ export interface SsiQueryDidParamResponse {
 }
 
 export interface SsiQueryGetDidDocByIdResponse {
-  AtContext?: string;
+  _at_context?: string;
   didDocument?: SsiDid;
   didDocumentMetadata?: SsiMetadata;
   didResolutionMetadata?: SsiDidResolveMeta;
@@ -134,7 +170,7 @@ export interface SsiService {
 }
 
 export interface SsiSignInfo {
-  verificationMethodId?: string;
+  verification_method_id?: string;
   signature?: string;
 }
 
@@ -181,7 +217,7 @@ export interface V1Beta1PageRequest {
    * count_total is only respected when offset is used. It is ignored when key
    * is set.
    */
-  countTotal?: boolean;
+  count_total?: boolean;
 
   /**
    * reverse is set to true if results are to be returned in the descending order.
@@ -383,10 +419,26 @@ export class HttpClient<SecurityDataType = unknown> {
 }
 
 /**
- * @title ssi/v1/did.proto
+ * @title ssi/v1/credential.proto
  * @version version not set
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryQueryCredential
+   * @summary Query Credential
+   * @request GET:/hypersign-protocol/hidnode/ssi/credential/{credId}
+   */
+  queryQueryCredential = (credId: string, params: RequestParams = {}) =>
+    this.request<SsiQueryCredentialResponse, RpcStatus>({
+      path: `/hypersign-protocol/hidnode/ssi/credential/${credId}`,
+      method: "GET",
+      format: "json",
+      ...params,
+    });
+
   /**
    * No description
    *
@@ -401,7 +453,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       "pagination.key"?: string;
       "pagination.offset"?: string;
       "pagination.limit"?: string;
-      "pagination.countTotal"?: boolean;
+      "pagination.count_total"?: boolean;
       "pagination.reverse"?: boolean;
     },
     params: RequestParams = {},
@@ -444,7 +496,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       "pagination.key"?: string;
       "pagination.offset"?: string;
       "pagination.limit"?: string;
-      "pagination.countTotal"?: boolean;
+      "pagination.count_total"?: boolean;
       "pagination.reverse"?: boolean;
     },
     params: RequestParams = {},

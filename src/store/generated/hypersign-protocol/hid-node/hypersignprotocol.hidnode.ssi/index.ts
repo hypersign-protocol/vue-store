@@ -1,7 +1,9 @@
 import { txClient, queryClient, MissingWalletError , registry} from './module'
-// @ts-ignore
-import { SpVuexError } from '@starport/vuex'
 
+import { Claim } from "./module/types/ssi/v1/credential"
+import { CredentialStatus } from "./module/types/ssi/v1/credential"
+import { CredentialProof } from "./module/types/ssi/v1/credential"
+import { Credential } from "./module/types/ssi/v1/credential"
 import { Did } from "./module/types/ssi/v1/did"
 import { Metadata } from "./module/types/ssi/v1/did"
 import { DidResolveMeta } from "./module/types/ssi/v1/did"
@@ -11,11 +13,13 @@ import { SignInfo } from "./module/types/ssi/v1/did"
 import { DidDocument } from "./module/types/ssi/v1/did"
 import { Params } from "./module/types/ssi/v1/params"
 import { DidResolutionResponse } from "./module/types/ssi/v1/query"
+import { MarshalInput } from "./module/types/ssi/v1/query"
+import { MarshalOutput } from "./module/types/ssi/v1/query"
 import { Schema } from "./module/types/ssi/v1/schema"
 import { SchemaProperty } from "./module/types/ssi/v1/schema"
 
 
-export { Did, Metadata, DidResolveMeta, VerificationMethod, Service, SignInfo, DidDocument, Params, DidResolutionResponse, Schema, SchemaProperty };
+export { Claim, CredentialStatus, CredentialProof, Credential, Did, Metadata, DidResolveMeta, VerificationMethod, Service, SignInfo, DidDocument, Params, DidResolutionResponse, MarshalInput, MarshalOutput, Schema, SchemaProperty };
 
 async function initTxClient(vuexGetters) {
 	return await txClient(vuexGetters['common/wallet/signer'], {
@@ -58,8 +62,13 @@ const getDefaultState = () => {
 				SchemaParam: {},
 				ResolveDid: {},
 				DidParam: {},
+				QueryCredential: {},
 				
 				_Structure: {
+						Claim: getStructure(Claim.fromPartial({})),
+						CredentialStatus: getStructure(CredentialStatus.fromPartial({})),
+						CredentialProof: getStructure(CredentialProof.fromPartial({})),
+						Credential: getStructure(Credential.fromPartial({})),
 						Did: getStructure(Did.fromPartial({})),
 						Metadata: getStructure(Metadata.fromPartial({})),
 						DidResolveMeta: getStructure(DidResolveMeta.fromPartial({})),
@@ -69,6 +78,8 @@ const getDefaultState = () => {
 						DidDocument: getStructure(DidDocument.fromPartial({})),
 						Params: getStructure(Params.fromPartial({})),
 						DidResolutionResponse: getStructure(DidResolutionResponse.fromPartial({})),
+						MarshalInput: getStructure(MarshalInput.fromPartial({})),
+						MarshalOutput: getStructure(MarshalOutput.fromPartial({})),
 						Schema: getStructure(Schema.fromPartial({})),
 						SchemaProperty: getStructure(SchemaProperty.fromPartial({})),
 						
@@ -129,6 +140,12 @@ export default {
 					}
 			return state.DidParam[JSON.stringify(params)] ?? {}
 		},
+				getQueryCredential: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.QueryCredential[JSON.stringify(params)] ?? {}
+		},
 				
 		getTypeStructure: (state) => (type) => {
 			return state._Structure[type].fields
@@ -158,7 +175,7 @@ export default {
 					const sub=JSON.parse(subscription)
 					await dispatch(sub.action, sub.payload)
 				}catch(e) {
-					throw new SpVuexError('Subscriptions: ' + e.message)
+					throw new Error('Subscriptions: ' + e.message)
 				}
 			})
 		},
@@ -179,7 +196,7 @@ export default {
 				if (subscribe) commit('SUBSCRIBE', { action: 'QueryParams', payload: { options: { all }, params: {...key},query }})
 				return getters['getParams']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new SpVuexError('QueryClient:QueryParams', 'API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QueryParams API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
@@ -201,7 +218,7 @@ export default {
 				if (subscribe) commit('SUBSCRIBE', { action: 'QueryGetSchema', payload: { options: { all }, params: {...key},query }})
 				return getters['getGetSchema']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new SpVuexError('QueryClient:QueryGetSchema', 'API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QueryGetSchema API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
@@ -227,7 +244,7 @@ export default {
 				if (subscribe) commit('SUBSCRIBE', { action: 'QuerySchemaParam', payload: { options: { all }, params: {...key},query }})
 				return getters['getSchemaParam']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new SpVuexError('QueryClient:QuerySchemaParam', 'API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QuerySchemaParam API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
@@ -253,7 +270,7 @@ export default {
 				if (subscribe) commit('SUBSCRIBE', { action: 'QueryResolveDid', payload: { options: { all }, params: {...key},query }})
 				return getters['getResolveDid']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new SpVuexError('QueryClient:QueryResolveDid', 'API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QueryResolveDid API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
@@ -279,27 +296,34 @@ export default {
 				if (subscribe) commit('SUBSCRIBE', { action: 'QueryDidParam', payload: { options: { all }, params: {...key},query }})
 				return getters['getDidParam']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new SpVuexError('QueryClient:QueryDidParam', 'API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QueryDidParam API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
 		
 		
-		async sendMsgCreateDID({ rootGetters }, { value, fee = [], memo = '' }) {
+		
+		
+		 		
+		
+		
+		async QueryQueryCredential({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
 			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgCreateDID(value)
-				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
-	gas: "200000" }, memo})
-				return result
+				const key = params ?? {};
+				const queryClient=await initQueryClient(rootGetters)
+				let value= (await queryClient.queryQueryCredential( key.credId)).data
+				
+					
+				commit('QUERY', { query: 'QueryCredential', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryQueryCredential', payload: { options: { all }, params: {...key},query }})
+				return getters['getQueryCredential']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new SpVuexError('TxClient:MsgCreateDID:Init', 'Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new SpVuexError('TxClient:MsgCreateDID:Send', 'Could not broadcast Tx: '+ e.message)
-				}
+				throw new Error('QueryClient:QueryQueryCredential API Node Unavailable. Could not perform query: ' + e.message)
+				
 			}
 		},
+		
+		
 		async sendMsgDeactivateDID({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -309,24 +333,24 @@ export default {
 				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new SpVuexError('TxClient:MsgDeactivateDID:Init', 'Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgDeactivateDID:Init Could not initialize signing client. Wallet is required.')
 				}else{
-					throw new SpVuexError('TxClient:MsgDeactivateDID:Send', 'Could not broadcast Tx: '+ e.message)
+					throw new Error('TxClient:MsgDeactivateDID:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
-		async sendMsgUpdateDID({ rootGetters }, { value, fee = [], memo = '' }) {
+		async sendMsgRegisterCredentialStatus({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgUpdateDID(value)
+				const msg = await txClient.msgRegisterCredentialStatus(value)
 				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
 	gas: "200000" }, memo})
 				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new SpVuexError('TxClient:MsgUpdateDID:Init', 'Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgRegisterCredentialStatus:Init Could not initialize signing client. Wallet is required.')
 				}else{
-					throw new SpVuexError('TxClient:MsgUpdateDID:Send', 'Could not broadcast Tx: '+ e.message)
+					throw new Error('TxClient:MsgRegisterCredentialStatus:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
@@ -339,27 +363,43 @@ export default {
 				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new SpVuexError('TxClient:MsgCreateSchema:Init', 'Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgCreateSchema:Init Could not initialize signing client. Wallet is required.')
 				}else{
-					throw new SpVuexError('TxClient:MsgCreateSchema:Send', 'Could not broadcast Tx: '+ e.message)
+					throw new Error('TxClient:MsgCreateSchema:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgCreateDID({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgCreateDID(value)
+				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
+	gas: "200000" }, memo})
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgCreateDID:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgCreateDID:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgUpdateDID({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgUpdateDID(value)
+				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
+	gas: "200000" }, memo})
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgUpdateDID:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgUpdateDID:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
 		
-		async MsgCreateDID({ rootGetters }, { value }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgCreateDID(value)
-				return msg
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new SpVuexError('TxClient:MsgCreateDID:Init', 'Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new SpVuexError('TxClient:MsgCreateDID:Create', 'Could not create message: ' + e.message)
-					
-				}
-			}
-		},
 		async MsgDeactivateDID({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -367,24 +407,22 @@ export default {
 				return msg
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new SpVuexError('TxClient:MsgDeactivateDID:Init', 'Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new SpVuexError('TxClient:MsgDeactivateDID:Create', 'Could not create message: ' + e.message)
-					
+					throw new Error('TxClient:MsgDeactivateDID:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgDeactivateDID:Create Could not create message: ' + e.message)
 				}
 			}
 		},
-		async MsgUpdateDID({ rootGetters }, { value }) {
+		async MsgRegisterCredentialStatus({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgUpdateDID(value)
+				const msg = await txClient.msgRegisterCredentialStatus(value)
 				return msg
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new SpVuexError('TxClient:MsgUpdateDID:Init', 'Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new SpVuexError('TxClient:MsgUpdateDID:Create', 'Could not create message: ' + e.message)
-					
+					throw new Error('TxClient:MsgRegisterCredentialStatus:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgRegisterCredentialStatus:Create Could not create message: ' + e.message)
 				}
 			}
 		},
@@ -395,10 +433,35 @@ export default {
 				return msg
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new SpVuexError('TxClient:MsgCreateSchema:Init', 'Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new SpVuexError('TxClient:MsgCreateSchema:Create', 'Could not create message: ' + e.message)
-					
+					throw new Error('TxClient:MsgCreateSchema:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgCreateSchema:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgCreateDID({ rootGetters }, { value }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgCreateDID(value)
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgCreateDID:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgCreateDID:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgUpdateDID({ rootGetters }, { value }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgUpdateDID(value)
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgUpdateDID:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgUpdateDID:Create Could not create message: ' + e.message)
 				}
 			}
 		},
