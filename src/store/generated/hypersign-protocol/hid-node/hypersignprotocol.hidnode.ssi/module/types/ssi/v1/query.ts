@@ -1,12 +1,21 @@
 /* eslint-disable */
 import { Reader, util, configure, Writer } from "protobufjs/minimal";
 import * as Long from "long";
+import { Credential } from "../../ssi/v1/credential";
 import { Params } from "../../ssi/v1/params";
 import { Schema } from "../../ssi/v1/schema";
 import { PageRequest } from "../../cosmos/base/query/v1beta1/pagination";
 import { Did, Metadata, DidResolveMeta } from "../../ssi/v1/did";
 
 export const protobufPackage = "hypersignprotocol.hidnode.ssi";
+
+export interface QueryCredentialRequest {
+  credId: string;
+}
+
+export interface QueryCredentialResponse {
+  credStatus: Credential | undefined;
+}
 
 /** QueryParamsRequest is request type for the Query/Params RPC method. */
 export interface QueryParamsRequest {}
@@ -40,7 +49,7 @@ export interface QueryGetDidDocByIdRequest {
 }
 
 export interface QueryGetDidDocByIdResponse {
-  AtContext: string;
+  _at_context: string;
   didDocument: Did | undefined;
   didDocumentMetadata: Metadata | undefined;
   didResolutionMetadata: DidResolveMeta | undefined;
@@ -57,11 +66,148 @@ export interface QueryDidParamResponse {
 }
 
 export interface DidResolutionResponse {
-  AtContext: string;
+  _at_context: string;
   didDocument: Did | undefined;
   didDocumentMetadata: Metadata | undefined;
   didResolutionMetadata: DidResolveMeta | undefined;
 }
+
+export interface MarshalInput {
+  stringInput: string;
+}
+
+export interface MarshalOutput {
+  unmarshalOutput: string;
+}
+
+const baseQueryCredentialRequest: object = { credId: "" };
+
+export const QueryCredentialRequest = {
+  encode(
+    message: QueryCredentialRequest,
+    writer: Writer = Writer.create()
+  ): Writer {
+    if (message.credId !== "") {
+      writer.uint32(10).string(message.credId);
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): QueryCredentialRequest {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseQueryCredentialRequest } as QueryCredentialRequest;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.credId = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryCredentialRequest {
+    const message = { ...baseQueryCredentialRequest } as QueryCredentialRequest;
+    if (object.credId !== undefined && object.credId !== null) {
+      message.credId = String(object.credId);
+    } else {
+      message.credId = "";
+    }
+    return message;
+  },
+
+  toJSON(message: QueryCredentialRequest): unknown {
+    const obj: any = {};
+    message.credId !== undefined && (obj.credId = message.credId);
+    return obj;
+  },
+
+  fromPartial(
+    object: DeepPartial<QueryCredentialRequest>
+  ): QueryCredentialRequest {
+    const message = { ...baseQueryCredentialRequest } as QueryCredentialRequest;
+    if (object.credId !== undefined && object.credId !== null) {
+      message.credId = object.credId;
+    } else {
+      message.credId = "";
+    }
+    return message;
+  },
+};
+
+const baseQueryCredentialResponse: object = {};
+
+export const QueryCredentialResponse = {
+  encode(
+    message: QueryCredentialResponse,
+    writer: Writer = Writer.create()
+  ): Writer {
+    if (message.credStatus !== undefined) {
+      Credential.encode(message.credStatus, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): QueryCredentialResponse {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = {
+      ...baseQueryCredentialResponse,
+    } as QueryCredentialResponse;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.credStatus = Credential.decode(reader, reader.uint32());
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryCredentialResponse {
+    const message = {
+      ...baseQueryCredentialResponse,
+    } as QueryCredentialResponse;
+    if (object.credStatus !== undefined && object.credStatus !== null) {
+      message.credStatus = Credential.fromJSON(object.credStatus);
+    } else {
+      message.credStatus = undefined;
+    }
+    return message;
+  },
+
+  toJSON(message: QueryCredentialResponse): unknown {
+    const obj: any = {};
+    message.credStatus !== undefined &&
+      (obj.credStatus = message.credStatus
+        ? Credential.toJSON(message.credStatus)
+        : undefined);
+    return obj;
+  },
+
+  fromPartial(
+    object: DeepPartial<QueryCredentialResponse>
+  ): QueryCredentialResponse {
+    const message = {
+      ...baseQueryCredentialResponse,
+    } as QueryCredentialResponse;
+    if (object.credStatus !== undefined && object.credStatus !== null) {
+      message.credStatus = Credential.fromPartial(object.credStatus);
+    } else {
+      message.credStatus = undefined;
+    }
+    return message;
+  },
+};
 
 const baseQueryParamsRequest: object = {};
 
@@ -539,15 +685,15 @@ export const QueryGetDidDocByIdRequest = {
   },
 };
 
-const baseQueryGetDidDocByIdResponse: object = { AtContext: "" };
+const baseQueryGetDidDocByIdResponse: object = { _at_context: "" };
 
 export const QueryGetDidDocByIdResponse = {
   encode(
     message: QueryGetDidDocByIdResponse,
     writer: Writer = Writer.create()
   ): Writer {
-    if (message.AtContext !== "") {
-      writer.uint32(10).string(message.AtContext);
+    if (message._at_context !== "") {
+      writer.uint32(10).string(message._at_context);
     }
     if (message.didDocument !== undefined) {
       Did.encode(message.didDocument, writer.uint32(18).fork()).ldelim();
@@ -580,7 +726,7 @@ export const QueryGetDidDocByIdResponse = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.AtContext = reader.string();
+          message._at_context = reader.string();
           break;
         case 2:
           message.didDocument = Did.decode(reader, reader.uint32());
@@ -609,10 +755,10 @@ export const QueryGetDidDocByIdResponse = {
     const message = {
       ...baseQueryGetDidDocByIdResponse,
     } as QueryGetDidDocByIdResponse;
-    if (object.AtContext !== undefined && object.AtContext !== null) {
-      message.AtContext = String(object.AtContext);
+    if (object._at_context !== undefined && object._at_context !== null) {
+      message._at_context = String(object._at_context);
     } else {
-      message.AtContext = "";
+      message._at_context = "";
     }
     if (object.didDocument !== undefined && object.didDocument !== null) {
       message.didDocument = Did.fromJSON(object.didDocument);
@@ -644,7 +790,8 @@ export const QueryGetDidDocByIdResponse = {
 
   toJSON(message: QueryGetDidDocByIdResponse): unknown {
     const obj: any = {};
-    message.AtContext !== undefined && (obj.AtContext = message.AtContext);
+    message._at_context !== undefined &&
+      (obj._at_context = message._at_context);
     message.didDocument !== undefined &&
       (obj.didDocument = message.didDocument
         ? Did.toJSON(message.didDocument)
@@ -666,10 +813,10 @@ export const QueryGetDidDocByIdResponse = {
     const message = {
       ...baseQueryGetDidDocByIdResponse,
     } as QueryGetDidDocByIdResponse;
-    if (object.AtContext !== undefined && object.AtContext !== null) {
-      message.AtContext = object.AtContext;
+    if (object._at_context !== undefined && object._at_context !== null) {
+      message._at_context = object._at_context;
     } else {
-      message.AtContext = "";
+      message._at_context = "";
     }
     if (object.didDocument !== undefined && object.didDocument !== null) {
       message.didDocument = Did.fromPartial(object.didDocument);
@@ -867,15 +1014,15 @@ export const QueryDidParamResponse = {
   },
 };
 
-const baseDidResolutionResponse: object = { AtContext: "" };
+const baseDidResolutionResponse: object = { _at_context: "" };
 
 export const DidResolutionResponse = {
   encode(
     message: DidResolutionResponse,
     writer: Writer = Writer.create()
   ): Writer {
-    if (message.AtContext !== "") {
-      writer.uint32(10).string(message.AtContext);
+    if (message._at_context !== "") {
+      writer.uint32(10).string(message._at_context);
     }
     if (message.didDocument !== undefined) {
       Did.encode(message.didDocument, writer.uint32(18).fork()).ldelim();
@@ -903,7 +1050,7 @@ export const DidResolutionResponse = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.AtContext = reader.string();
+          message._at_context = reader.string();
           break;
         case 2:
           message.didDocument = Did.decode(reader, reader.uint32());
@@ -930,10 +1077,10 @@ export const DidResolutionResponse = {
 
   fromJSON(object: any): DidResolutionResponse {
     const message = { ...baseDidResolutionResponse } as DidResolutionResponse;
-    if (object.AtContext !== undefined && object.AtContext !== null) {
-      message.AtContext = String(object.AtContext);
+    if (object._at_context !== undefined && object._at_context !== null) {
+      message._at_context = String(object._at_context);
     } else {
-      message.AtContext = "";
+      message._at_context = "";
     }
     if (object.didDocument !== undefined && object.didDocument !== null) {
       message.didDocument = Did.fromJSON(object.didDocument);
@@ -965,7 +1112,8 @@ export const DidResolutionResponse = {
 
   toJSON(message: DidResolutionResponse): unknown {
     const obj: any = {};
-    message.AtContext !== undefined && (obj.AtContext = message.AtContext);
+    message._at_context !== undefined &&
+      (obj._at_context = message._at_context);
     message.didDocument !== undefined &&
       (obj.didDocument = message.didDocument
         ? Did.toJSON(message.didDocument)
@@ -985,10 +1133,10 @@ export const DidResolutionResponse = {
     object: DeepPartial<DidResolutionResponse>
   ): DidResolutionResponse {
     const message = { ...baseDidResolutionResponse } as DidResolutionResponse;
-    if (object.AtContext !== undefined && object.AtContext !== null) {
-      message.AtContext = object.AtContext;
+    if (object._at_context !== undefined && object._at_context !== null) {
+      message._at_context = object._at_context;
     } else {
-      message.AtContext = "";
+      message._at_context = "";
     }
     if (object.didDocument !== undefined && object.didDocument !== null) {
       message.didDocument = Did.fromPartial(object.didDocument);
@@ -1019,6 +1167,124 @@ export const DidResolutionResponse = {
   },
 };
 
+const baseMarshalInput: object = { stringInput: "" };
+
+export const MarshalInput = {
+  encode(message: MarshalInput, writer: Writer = Writer.create()): Writer {
+    if (message.stringInput !== "") {
+      writer.uint32(10).string(message.stringInput);
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MarshalInput {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMarshalInput } as MarshalInput;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.stringInput = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MarshalInput {
+    const message = { ...baseMarshalInput } as MarshalInput;
+    if (object.stringInput !== undefined && object.stringInput !== null) {
+      message.stringInput = String(object.stringInput);
+    } else {
+      message.stringInput = "";
+    }
+    return message;
+  },
+
+  toJSON(message: MarshalInput): unknown {
+    const obj: any = {};
+    message.stringInput !== undefined &&
+      (obj.stringInput = message.stringInput);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<MarshalInput>): MarshalInput {
+    const message = { ...baseMarshalInput } as MarshalInput;
+    if (object.stringInput !== undefined && object.stringInput !== null) {
+      message.stringInput = object.stringInput;
+    } else {
+      message.stringInput = "";
+    }
+    return message;
+  },
+};
+
+const baseMarshalOutput: object = { unmarshalOutput: "" };
+
+export const MarshalOutput = {
+  encode(message: MarshalOutput, writer: Writer = Writer.create()): Writer {
+    if (message.unmarshalOutput !== "") {
+      writer.uint32(10).string(message.unmarshalOutput);
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MarshalOutput {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMarshalOutput } as MarshalOutput;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.unmarshalOutput = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MarshalOutput {
+    const message = { ...baseMarshalOutput } as MarshalOutput;
+    if (
+      object.unmarshalOutput !== undefined &&
+      object.unmarshalOutput !== null
+    ) {
+      message.unmarshalOutput = String(object.unmarshalOutput);
+    } else {
+      message.unmarshalOutput = "";
+    }
+    return message;
+  },
+
+  toJSON(message: MarshalOutput): unknown {
+    const obj: any = {};
+    message.unmarshalOutput !== undefined &&
+      (obj.unmarshalOutput = message.unmarshalOutput);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<MarshalOutput>): MarshalOutput {
+    const message = { ...baseMarshalOutput } as MarshalOutput;
+    if (
+      object.unmarshalOutput !== undefined &&
+      object.unmarshalOutput !== null
+    ) {
+      message.unmarshalOutput = object.unmarshalOutput;
+    } else {
+      message.unmarshalOutput = "";
+    }
+    return message;
+  },
+};
+
 /** Query defines the gRPC querier service. */
 export interface Query {
   /** Parameters queries the parameters of the module. */
@@ -1035,6 +1301,10 @@ export interface Query {
   ): Promise<QueryGetDidDocByIdResponse>;
   /** Did Param */
   DidParam(request: QueryDidParamRequest): Promise<QueryDidParamResponse>;
+  /** Query Credential */
+  QueryCredential(
+    request: QueryCredentialRequest
+  ): Promise<QueryCredentialResponse>;
 }
 
 export class QueryClientImpl implements Query {
@@ -1101,6 +1371,20 @@ export class QueryClientImpl implements Query {
     );
     return promise.then((data) =>
       QueryDidParamResponse.decode(new Reader(data))
+    );
+  }
+
+  QueryCredential(
+    request: QueryCredentialRequest
+  ): Promise<QueryCredentialResponse> {
+    const data = QueryCredentialRequest.encode(request).finish();
+    const promise = this.rpc.request(
+      "hypersignprotocol.hidnode.ssi.Query",
+      "QueryCredential",
+      data
+    );
+    return promise.then((data) =>
+      QueryCredentialResponse.decode(new Reader(data))
     );
   }
 }
