@@ -29,13 +29,16 @@ export interface SsiClaim {
 export interface SsiCredential {
   claim?: SsiClaim;
   issuer?: string;
-  issued?: string;
+  issuanceDate?: string;
+  expirationDate?: string;
+  credentialHash?: string;
   proof?: SsiCredentialProof;
 }
 
 export interface SsiCredentialProof {
   type?: string;
   created?: string;
+  updated?: string;
   verificationMethod?: string;
   proofPurpose?: string;
   proofValue?: string;
@@ -44,7 +47,9 @@ export interface SsiCredentialProof {
 export interface SsiCredentialStatus {
   claim?: SsiClaim;
   issuer?: string;
-  issued?: string;
+  issuanceDate?: string;
+  expirationDate?: string;
+  credentialHash?: string;
 }
 
 export interface SsiDid {

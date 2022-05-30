@@ -40,7 +40,7 @@ export interface MsgCreateSchemaResponse {
 
 export interface MsgDeactivateDID {
   creator: string;
-  didDocString: Did | undefined;
+  didId: string;
   version_id: string;
   signatures: SignInfo[];
 }
@@ -559,15 +559,15 @@ export const MsgCreateSchemaResponse = {
   },
 };
 
-const baseMsgDeactivateDID: object = { creator: "", version_id: "" };
+const baseMsgDeactivateDID: object = { creator: "", didId: "", version_id: "" };
 
 export const MsgDeactivateDID = {
   encode(message: MsgDeactivateDID, writer: Writer = Writer.create()): Writer {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
-    if (message.didDocString !== undefined) {
-      Did.encode(message.didDocString, writer.uint32(18).fork()).ldelim();
+    if (message.didId !== "") {
+      writer.uint32(18).string(message.didId);
     }
     if (message.version_id !== "") {
       writer.uint32(26).string(message.version_id);
@@ -590,7 +590,7 @@ export const MsgDeactivateDID = {
           message.creator = reader.string();
           break;
         case 2:
-          message.didDocString = Did.decode(reader, reader.uint32());
+          message.didId = reader.string();
           break;
         case 3:
           message.version_id = reader.string();
@@ -614,10 +614,10 @@ export const MsgDeactivateDID = {
     } else {
       message.creator = "";
     }
-    if (object.didDocString !== undefined && object.didDocString !== null) {
-      message.didDocString = Did.fromJSON(object.didDocString);
+    if (object.didId !== undefined && object.didId !== null) {
+      message.didId = String(object.didId);
     } else {
-      message.didDocString = undefined;
+      message.didId = "";
     }
     if (object.version_id !== undefined && object.version_id !== null) {
       message.version_id = String(object.version_id);
@@ -635,10 +635,7 @@ export const MsgDeactivateDID = {
   toJSON(message: MsgDeactivateDID): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
-    message.didDocString !== undefined &&
-      (obj.didDocString = message.didDocString
-        ? Did.toJSON(message.didDocString)
-        : undefined);
+    message.didId !== undefined && (obj.didId = message.didId);
     message.version_id !== undefined && (obj.version_id = message.version_id);
     if (message.signatures) {
       obj.signatures = message.signatures.map((e) =>
@@ -658,10 +655,10 @@ export const MsgDeactivateDID = {
     } else {
       message.creator = "";
     }
-    if (object.didDocString !== undefined && object.didDocString !== null) {
-      message.didDocString = Did.fromPartial(object.didDocString);
+    if (object.didId !== undefined && object.didId !== null) {
+      message.didId = object.didId;
     } else {
-      message.didDocString = undefined;
+      message.didId = "";
     }
     if (object.version_id !== undefined && object.version_id !== null) {
       message.version_id = object.version_id;

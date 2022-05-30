@@ -12,12 +12,15 @@ export interface Claim {
 export interface CredentialStatus {
   claim: Claim | undefined;
   issuer: string;
-  issued: string;
+  issuanceDate: string;
+  expirationDate: string;
+  credentialHash: string;
 }
 
 export interface CredentialProof {
   type: string;
   created: string;
+  updated: string;
   verificationMethod: string;
   proofPurpose: string;
   proofValue: string;
@@ -26,7 +29,9 @@ export interface CredentialProof {
 export interface Credential {
   claim: Claim | undefined;
   issuer: string;
-  issued: string;
+  issuanceDate: string;
+  expirationDate: string;
+  credentialHash: string;
   proof: CredentialProof | undefined;
 }
 
@@ -121,7 +126,12 @@ export const Claim = {
   },
 };
 
-const baseCredentialStatus: object = { issuer: "", issued: "" };
+const baseCredentialStatus: object = {
+  issuer: "",
+  issuanceDate: "",
+  expirationDate: "",
+  credentialHash: "",
+};
 
 export const CredentialStatus = {
   encode(message: CredentialStatus, writer: Writer = Writer.create()): Writer {
@@ -131,8 +141,14 @@ export const CredentialStatus = {
     if (message.issuer !== "") {
       writer.uint32(18).string(message.issuer);
     }
-    if (message.issued !== "") {
-      writer.uint32(26).string(message.issued);
+    if (message.issuanceDate !== "") {
+      writer.uint32(26).string(message.issuanceDate);
+    }
+    if (message.expirationDate !== "") {
+      writer.uint32(34).string(message.expirationDate);
+    }
+    if (message.credentialHash !== "") {
+      writer.uint32(42).string(message.credentialHash);
     }
     return writer;
   },
@@ -151,7 +167,13 @@ export const CredentialStatus = {
           message.issuer = reader.string();
           break;
         case 3:
-          message.issued = reader.string();
+          message.issuanceDate = reader.string();
+          break;
+        case 4:
+          message.expirationDate = reader.string();
+          break;
+        case 5:
+          message.credentialHash = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -173,10 +195,20 @@ export const CredentialStatus = {
     } else {
       message.issuer = "";
     }
-    if (object.issued !== undefined && object.issued !== null) {
-      message.issued = String(object.issued);
+    if (object.issuanceDate !== undefined && object.issuanceDate !== null) {
+      message.issuanceDate = String(object.issuanceDate);
     } else {
-      message.issued = "";
+      message.issuanceDate = "";
+    }
+    if (object.expirationDate !== undefined && object.expirationDate !== null) {
+      message.expirationDate = String(object.expirationDate);
+    } else {
+      message.expirationDate = "";
+    }
+    if (object.credentialHash !== undefined && object.credentialHash !== null) {
+      message.credentialHash = String(object.credentialHash);
+    } else {
+      message.credentialHash = "";
     }
     return message;
   },
@@ -186,7 +218,12 @@ export const CredentialStatus = {
     message.claim !== undefined &&
       (obj.claim = message.claim ? Claim.toJSON(message.claim) : undefined);
     message.issuer !== undefined && (obj.issuer = message.issuer);
-    message.issued !== undefined && (obj.issued = message.issued);
+    message.issuanceDate !== undefined &&
+      (obj.issuanceDate = message.issuanceDate);
+    message.expirationDate !== undefined &&
+      (obj.expirationDate = message.expirationDate);
+    message.credentialHash !== undefined &&
+      (obj.credentialHash = message.credentialHash);
     return obj;
   },
 
@@ -202,10 +239,20 @@ export const CredentialStatus = {
     } else {
       message.issuer = "";
     }
-    if (object.issued !== undefined && object.issued !== null) {
-      message.issued = object.issued;
+    if (object.issuanceDate !== undefined && object.issuanceDate !== null) {
+      message.issuanceDate = object.issuanceDate;
     } else {
-      message.issued = "";
+      message.issuanceDate = "";
+    }
+    if (object.expirationDate !== undefined && object.expirationDate !== null) {
+      message.expirationDate = object.expirationDate;
+    } else {
+      message.expirationDate = "";
+    }
+    if (object.credentialHash !== undefined && object.credentialHash !== null) {
+      message.credentialHash = object.credentialHash;
+    } else {
+      message.credentialHash = "";
     }
     return message;
   },
@@ -214,6 +261,7 @@ export const CredentialStatus = {
 const baseCredentialProof: object = {
   type: "",
   created: "",
+  updated: "",
   verificationMethod: "",
   proofPurpose: "",
   proofValue: "",
@@ -227,14 +275,17 @@ export const CredentialProof = {
     if (message.created !== "") {
       writer.uint32(18).string(message.created);
     }
+    if (message.updated !== "") {
+      writer.uint32(26).string(message.updated);
+    }
     if (message.verificationMethod !== "") {
-      writer.uint32(26).string(message.verificationMethod);
+      writer.uint32(34).string(message.verificationMethod);
     }
     if (message.proofPurpose !== "") {
-      writer.uint32(34).string(message.proofPurpose);
+      writer.uint32(42).string(message.proofPurpose);
     }
     if (message.proofValue !== "") {
-      writer.uint32(42).string(message.proofValue);
+      writer.uint32(50).string(message.proofValue);
     }
     return writer;
   },
@@ -253,12 +304,15 @@ export const CredentialProof = {
           message.created = reader.string();
           break;
         case 3:
-          message.verificationMethod = reader.string();
+          message.updated = reader.string();
           break;
         case 4:
-          message.proofPurpose = reader.string();
+          message.verificationMethod = reader.string();
           break;
         case 5:
+          message.proofPurpose = reader.string();
+          break;
+        case 6:
           message.proofValue = reader.string();
           break;
         default:
@@ -280,6 +334,11 @@ export const CredentialProof = {
       message.created = String(object.created);
     } else {
       message.created = "";
+    }
+    if (object.updated !== undefined && object.updated !== null) {
+      message.updated = String(object.updated);
+    } else {
+      message.updated = "";
     }
     if (
       object.verificationMethod !== undefined &&
@@ -306,6 +365,7 @@ export const CredentialProof = {
     const obj: any = {};
     message.type !== undefined && (obj.type = message.type);
     message.created !== undefined && (obj.created = message.created);
+    message.updated !== undefined && (obj.updated = message.updated);
     message.verificationMethod !== undefined &&
       (obj.verificationMethod = message.verificationMethod);
     message.proofPurpose !== undefined &&
@@ -325,6 +385,11 @@ export const CredentialProof = {
       message.created = object.created;
     } else {
       message.created = "";
+    }
+    if (object.updated !== undefined && object.updated !== null) {
+      message.updated = object.updated;
+    } else {
+      message.updated = "";
     }
     if (
       object.verificationMethod !== undefined &&
@@ -348,7 +413,12 @@ export const CredentialProof = {
   },
 };
 
-const baseCredential: object = { issuer: "", issued: "" };
+const baseCredential: object = {
+  issuer: "",
+  issuanceDate: "",
+  expirationDate: "",
+  credentialHash: "",
+};
 
 export const Credential = {
   encode(message: Credential, writer: Writer = Writer.create()): Writer {
@@ -358,11 +428,17 @@ export const Credential = {
     if (message.issuer !== "") {
       writer.uint32(18).string(message.issuer);
     }
-    if (message.issued !== "") {
-      writer.uint32(26).string(message.issued);
+    if (message.issuanceDate !== "") {
+      writer.uint32(26).string(message.issuanceDate);
+    }
+    if (message.expirationDate !== "") {
+      writer.uint32(34).string(message.expirationDate);
+    }
+    if (message.credentialHash !== "") {
+      writer.uint32(42).string(message.credentialHash);
     }
     if (message.proof !== undefined) {
-      CredentialProof.encode(message.proof, writer.uint32(34).fork()).ldelim();
+      CredentialProof.encode(message.proof, writer.uint32(50).fork()).ldelim();
     }
     return writer;
   },
@@ -381,9 +457,15 @@ export const Credential = {
           message.issuer = reader.string();
           break;
         case 3:
-          message.issued = reader.string();
+          message.issuanceDate = reader.string();
           break;
         case 4:
+          message.expirationDate = reader.string();
+          break;
+        case 5:
+          message.credentialHash = reader.string();
+          break;
+        case 6:
           message.proof = CredentialProof.decode(reader, reader.uint32());
           break;
         default:
@@ -406,10 +488,20 @@ export const Credential = {
     } else {
       message.issuer = "";
     }
-    if (object.issued !== undefined && object.issued !== null) {
-      message.issued = String(object.issued);
+    if (object.issuanceDate !== undefined && object.issuanceDate !== null) {
+      message.issuanceDate = String(object.issuanceDate);
     } else {
-      message.issued = "";
+      message.issuanceDate = "";
+    }
+    if (object.expirationDate !== undefined && object.expirationDate !== null) {
+      message.expirationDate = String(object.expirationDate);
+    } else {
+      message.expirationDate = "";
+    }
+    if (object.credentialHash !== undefined && object.credentialHash !== null) {
+      message.credentialHash = String(object.credentialHash);
+    } else {
+      message.credentialHash = "";
     }
     if (object.proof !== undefined && object.proof !== null) {
       message.proof = CredentialProof.fromJSON(object.proof);
@@ -424,7 +516,12 @@ export const Credential = {
     message.claim !== undefined &&
       (obj.claim = message.claim ? Claim.toJSON(message.claim) : undefined);
     message.issuer !== undefined && (obj.issuer = message.issuer);
-    message.issued !== undefined && (obj.issued = message.issued);
+    message.issuanceDate !== undefined &&
+      (obj.issuanceDate = message.issuanceDate);
+    message.expirationDate !== undefined &&
+      (obj.expirationDate = message.expirationDate);
+    message.credentialHash !== undefined &&
+      (obj.credentialHash = message.credentialHash);
     message.proof !== undefined &&
       (obj.proof = message.proof
         ? CredentialProof.toJSON(message.proof)
@@ -444,10 +541,20 @@ export const Credential = {
     } else {
       message.issuer = "";
     }
-    if (object.issued !== undefined && object.issued !== null) {
-      message.issued = object.issued;
+    if (object.issuanceDate !== undefined && object.issuanceDate !== null) {
+      message.issuanceDate = object.issuanceDate;
     } else {
-      message.issued = "";
+      message.issuanceDate = "";
+    }
+    if (object.expirationDate !== undefined && object.expirationDate !== null) {
+      message.expirationDate = object.expirationDate;
+    } else {
+      message.expirationDate = "";
+    }
+    if (object.credentialHash !== undefined && object.credentialHash !== null) {
+      message.credentialHash = object.credentialHash;
+    } else {
+      message.credentialHash = "";
     }
     if (object.proof !== undefined && object.proof !== null) {
       message.proof = CredentialProof.fromPartial(object.proof);
