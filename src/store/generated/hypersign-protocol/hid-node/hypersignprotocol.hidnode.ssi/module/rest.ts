@@ -67,15 +67,8 @@ export interface SsiDid {
 }
 
 export interface SsiDidResolutionResponse {
-  _at_context?: string;
   didDocument?: SsiDid;
   didDocumentMetadata?: SsiMetadata;
-  didResolutionMetadata?: SsiDidResolveMeta;
-}
-
-export interface SsiDidResolveMeta {
-  retrieved?: string;
-  error?: string;
 }
 
 export interface SsiMetadata {
@@ -118,17 +111,16 @@ export interface SsiQueryCredentialResponse {
   credStatus?: SsiCredential;
 }
 
+export interface SsiQueryCredentialsResponse {
+  /** @format uint64 */
+  totalCount?: string;
+  credentials?: SsiCredential[];
+}
+
 export interface SsiQueryDidParamResponse {
   /** @format uint64 */
   totalDidCount?: string;
   didDocList?: SsiDidResolutionResponse[];
-}
-
-export interface SsiQueryGetDidDocByIdResponse {
-  _at_context?: string;
-  didDocument?: SsiDid;
-  didDocumentMetadata?: SsiMetadata;
-  didResolutionMetadata?: SsiDidResolveMeta;
 }
 
 export interface SsiQueryGetSchemaResponse {
@@ -432,8 +424,34 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    * No description
    *
    * @tags Query
+   * @name QueryQueryCredentials
+   * @summary Get all the registed Credential Statuses
+   * @request GET:/hypersign-protocol/hidnode/ssi/credential
+   */
+  queryQueryCredentials = (
+    query?: {
+      "pagination.key"?: string;
+      "pagination.offset"?: string;
+      "pagination.limit"?: string;
+      "pagination.count_total"?: boolean;
+      "pagination.reverse"?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<SsiQueryCredentialsResponse, RpcStatus>({
+      path: `/hypersign-protocol/hidnode/ssi/credential`,
+      method: "GET",
+      query: query,
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
    * @name QueryQueryCredential
-   * @summary Query Credential
+   * @summary Get the Credential Status for a given credential Id
    * @request GET:/hypersign-protocol/hidnode/ssi/credential/{credId}
    */
   queryQueryCredential = (credId: string, params: RequestParams = {}) =>
@@ -449,7 +467,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    *
    * @tags Query
    * @name QueryDidParam
-   * @summary Did Param
+   * @summary Get the list of registered Did Documents and count
    * @request GET:/hypersign-protocol/hidnode/ssi/did
    */
   queryDidParam = (
@@ -476,14 +494,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    *
    * @tags Query
    * @name QueryResolveDid
-   * @summary Resolve DID
+   * @summary Get the Did Document for a specified Did Id
    * @request GET:/hypersign-protocol/hidnode/ssi/did/{didId}
    */
-  queryResolveDid = (didId: string, query?: { versionId?: string }, params: RequestParams = {}) =>
-    this.request<SsiQueryGetDidDocByIdResponse, RpcStatus>({
+  queryResolveDid = (didId: string, params: RequestParams = {}) =>
+    this.request<SsiDidResolutionResponse, RpcStatus>({
       path: `/hypersign-protocol/hidnode/ssi/did/${didId}`,
       method: "GET",
-      query: query,
       format: "json",
       ...params,
     });
@@ -493,7 +510,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    *
    * @tags Query
    * @name QuerySchemaParam
-   * @summary Schema Param
+   * @summary Get the list of Schemas and count
    * @request GET:/hypersign-protocol/hidnode/ssi/schema
    */
   querySchemaParam = (
@@ -519,7 +536,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    *
    * @tags Query
    * @name QueryGetSchema
-   * @summary Queries a list of GetSchema items.
+   * @summary Get the Schema for a specified Schema Id
    * @request GET:/hypersign-protocol/hidnode/ssi/schema/{schemaId}
    */
   queryGetSchema = (schemaId: string, params: RequestParams = {}) =>

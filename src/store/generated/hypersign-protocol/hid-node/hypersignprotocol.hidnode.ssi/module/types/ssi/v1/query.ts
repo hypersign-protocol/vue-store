@@ -5,7 +5,7 @@ import { Credential } from "../../ssi/v1/credential";
 import { Params } from "../../ssi/v1/params";
 import { Schema } from "../../ssi/v1/schema";
 import { PageRequest } from "../../cosmos/base/query/v1beta1/pagination";
-import { Did, Metadata, DidResolveMeta } from "../../ssi/v1/did";
+import { Did, Metadata } from "../../ssi/v1/did";
 
 export const protobufPackage = "hypersignprotocol.hidnode.ssi";
 
@@ -45,14 +45,6 @@ export interface QuerySchemaParamResponse {
 
 export interface QueryGetDidDocByIdRequest {
   didId: string;
-  versionId: string;
-}
-
-export interface QueryGetDidDocByIdResponse {
-  _at_context: string;
-  didDocument: Did | undefined;
-  didDocumentMetadata: Metadata | undefined;
-  didResolutionMetadata: DidResolveMeta | undefined;
 }
 
 export interface QueryDidParamRequest {
@@ -66,10 +58,17 @@ export interface QueryDidParamResponse {
 }
 
 export interface DidResolutionResponse {
-  _at_context: string;
   didDocument: Did | undefined;
   didDocumentMetadata: Metadata | undefined;
-  didResolutionMetadata: DidResolveMeta | undefined;
+}
+
+export interface QueryCredentialsRequest {
+  pagination: PageRequest | undefined;
+}
+
+export interface QueryCredentialsResponse {
+  totalCount: number;
+  credentials: Credential[];
 }
 
 export interface MarshalInput {
@@ -599,7 +598,7 @@ export const QuerySchemaParamResponse = {
   },
 };
 
-const baseQueryGetDidDocByIdRequest: object = { didId: "", versionId: "" };
+const baseQueryGetDidDocByIdRequest: object = { didId: "" };
 
 export const QueryGetDidDocByIdRequest = {
   encode(
@@ -608,9 +607,6 @@ export const QueryGetDidDocByIdRequest = {
   ): Writer {
     if (message.didId !== "") {
       writer.uint32(10).string(message.didId);
-    }
-    if (message.versionId !== "") {
-      writer.uint32(18).string(message.versionId);
     }
     return writer;
   },
@@ -630,9 +626,6 @@ export const QueryGetDidDocByIdRequest = {
         case 1:
           message.didId = reader.string();
           break;
-        case 2:
-          message.versionId = reader.string();
-          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -650,18 +643,12 @@ export const QueryGetDidDocByIdRequest = {
     } else {
       message.didId = "";
     }
-    if (object.versionId !== undefined && object.versionId !== null) {
-      message.versionId = String(object.versionId);
-    } else {
-      message.versionId = "";
-    }
     return message;
   },
 
   toJSON(message: QueryGetDidDocByIdRequest): unknown {
     const obj: any = {};
     message.didId !== undefined && (obj.didId = message.didId);
-    message.versionId !== undefined && (obj.versionId = message.versionId);
     return obj;
   },
 
@@ -675,173 +662,6 @@ export const QueryGetDidDocByIdRequest = {
       message.didId = object.didId;
     } else {
       message.didId = "";
-    }
-    if (object.versionId !== undefined && object.versionId !== null) {
-      message.versionId = object.versionId;
-    } else {
-      message.versionId = "";
-    }
-    return message;
-  },
-};
-
-const baseQueryGetDidDocByIdResponse: object = { _at_context: "" };
-
-export const QueryGetDidDocByIdResponse = {
-  encode(
-    message: QueryGetDidDocByIdResponse,
-    writer: Writer = Writer.create()
-  ): Writer {
-    if (message._at_context !== "") {
-      writer.uint32(10).string(message._at_context);
-    }
-    if (message.didDocument !== undefined) {
-      Did.encode(message.didDocument, writer.uint32(18).fork()).ldelim();
-    }
-    if (message.didDocumentMetadata !== undefined) {
-      Metadata.encode(
-        message.didDocumentMetadata,
-        writer.uint32(26).fork()
-      ).ldelim();
-    }
-    if (message.didResolutionMetadata !== undefined) {
-      DidResolveMeta.encode(
-        message.didResolutionMetadata,
-        writer.uint32(34).fork()
-      ).ldelim();
-    }
-    return writer;
-  },
-
-  decode(
-    input: Reader | Uint8Array,
-    length?: number
-  ): QueryGetDidDocByIdResponse {
-    const reader = input instanceof Uint8Array ? new Reader(input) : input;
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseQueryGetDidDocByIdResponse,
-    } as QueryGetDidDocByIdResponse;
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message._at_context = reader.string();
-          break;
-        case 2:
-          message.didDocument = Did.decode(reader, reader.uint32());
-          break;
-        case 3:
-          message.didDocumentMetadata = Metadata.decode(
-            reader,
-            reader.uint32()
-          );
-          break;
-        case 4:
-          message.didResolutionMetadata = DidResolveMeta.decode(
-            reader,
-            reader.uint32()
-          );
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): QueryGetDidDocByIdResponse {
-    const message = {
-      ...baseQueryGetDidDocByIdResponse,
-    } as QueryGetDidDocByIdResponse;
-    if (object._at_context !== undefined && object._at_context !== null) {
-      message._at_context = String(object._at_context);
-    } else {
-      message._at_context = "";
-    }
-    if (object.didDocument !== undefined && object.didDocument !== null) {
-      message.didDocument = Did.fromJSON(object.didDocument);
-    } else {
-      message.didDocument = undefined;
-    }
-    if (
-      object.didDocumentMetadata !== undefined &&
-      object.didDocumentMetadata !== null
-    ) {
-      message.didDocumentMetadata = Metadata.fromJSON(
-        object.didDocumentMetadata
-      );
-    } else {
-      message.didDocumentMetadata = undefined;
-    }
-    if (
-      object.didResolutionMetadata !== undefined &&
-      object.didResolutionMetadata !== null
-    ) {
-      message.didResolutionMetadata = DidResolveMeta.fromJSON(
-        object.didResolutionMetadata
-      );
-    } else {
-      message.didResolutionMetadata = undefined;
-    }
-    return message;
-  },
-
-  toJSON(message: QueryGetDidDocByIdResponse): unknown {
-    const obj: any = {};
-    message._at_context !== undefined &&
-      (obj._at_context = message._at_context);
-    message.didDocument !== undefined &&
-      (obj.didDocument = message.didDocument
-        ? Did.toJSON(message.didDocument)
-        : undefined);
-    message.didDocumentMetadata !== undefined &&
-      (obj.didDocumentMetadata = message.didDocumentMetadata
-        ? Metadata.toJSON(message.didDocumentMetadata)
-        : undefined);
-    message.didResolutionMetadata !== undefined &&
-      (obj.didResolutionMetadata = message.didResolutionMetadata
-        ? DidResolveMeta.toJSON(message.didResolutionMetadata)
-        : undefined);
-    return obj;
-  },
-
-  fromPartial(
-    object: DeepPartial<QueryGetDidDocByIdResponse>
-  ): QueryGetDidDocByIdResponse {
-    const message = {
-      ...baseQueryGetDidDocByIdResponse,
-    } as QueryGetDidDocByIdResponse;
-    if (object._at_context !== undefined && object._at_context !== null) {
-      message._at_context = object._at_context;
-    } else {
-      message._at_context = "";
-    }
-    if (object.didDocument !== undefined && object.didDocument !== null) {
-      message.didDocument = Did.fromPartial(object.didDocument);
-    } else {
-      message.didDocument = undefined;
-    }
-    if (
-      object.didDocumentMetadata !== undefined &&
-      object.didDocumentMetadata !== null
-    ) {
-      message.didDocumentMetadata = Metadata.fromPartial(
-        object.didDocumentMetadata
-      );
-    } else {
-      message.didDocumentMetadata = undefined;
-    }
-    if (
-      object.didResolutionMetadata !== undefined &&
-      object.didResolutionMetadata !== null
-    ) {
-      message.didResolutionMetadata = DidResolveMeta.fromPartial(
-        object.didResolutionMetadata
-      );
-    } else {
-      message.didResolutionMetadata = undefined;
     }
     return message;
   },
@@ -1014,29 +834,20 @@ export const QueryDidParamResponse = {
   },
 };
 
-const baseDidResolutionResponse: object = { _at_context: "" };
+const baseDidResolutionResponse: object = {};
 
 export const DidResolutionResponse = {
   encode(
     message: DidResolutionResponse,
     writer: Writer = Writer.create()
   ): Writer {
-    if (message._at_context !== "") {
-      writer.uint32(10).string(message._at_context);
-    }
     if (message.didDocument !== undefined) {
-      Did.encode(message.didDocument, writer.uint32(18).fork()).ldelim();
+      Did.encode(message.didDocument, writer.uint32(10).fork()).ldelim();
     }
     if (message.didDocumentMetadata !== undefined) {
       Metadata.encode(
         message.didDocumentMetadata,
-        writer.uint32(26).fork()
-      ).ldelim();
-    }
-    if (message.didResolutionMetadata !== undefined) {
-      DidResolveMeta.encode(
-        message.didResolutionMetadata,
-        writer.uint32(34).fork()
+        writer.uint32(18).fork()
       ).ldelim();
     }
     return writer;
@@ -1050,19 +861,10 @@ export const DidResolutionResponse = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message._at_context = reader.string();
-          break;
-        case 2:
           message.didDocument = Did.decode(reader, reader.uint32());
           break;
-        case 3:
+        case 2:
           message.didDocumentMetadata = Metadata.decode(
-            reader,
-            reader.uint32()
-          );
-          break;
-        case 4:
-          message.didResolutionMetadata = DidResolveMeta.decode(
             reader,
             reader.uint32()
           );
@@ -1077,11 +879,6 @@ export const DidResolutionResponse = {
 
   fromJSON(object: any): DidResolutionResponse {
     const message = { ...baseDidResolutionResponse } as DidResolutionResponse;
-    if (object._at_context !== undefined && object._at_context !== null) {
-      message._at_context = String(object._at_context);
-    } else {
-      message._at_context = "";
-    }
     if (object.didDocument !== undefined && object.didDocument !== null) {
       message.didDocument = Did.fromJSON(object.didDocument);
     } else {
@@ -1097,23 +894,11 @@ export const DidResolutionResponse = {
     } else {
       message.didDocumentMetadata = undefined;
     }
-    if (
-      object.didResolutionMetadata !== undefined &&
-      object.didResolutionMetadata !== null
-    ) {
-      message.didResolutionMetadata = DidResolveMeta.fromJSON(
-        object.didResolutionMetadata
-      );
-    } else {
-      message.didResolutionMetadata = undefined;
-    }
     return message;
   },
 
   toJSON(message: DidResolutionResponse): unknown {
     const obj: any = {};
-    message._at_context !== undefined &&
-      (obj._at_context = message._at_context);
     message.didDocument !== undefined &&
       (obj.didDocument = message.didDocument
         ? Did.toJSON(message.didDocument)
@@ -1122,10 +907,6 @@ export const DidResolutionResponse = {
       (obj.didDocumentMetadata = message.didDocumentMetadata
         ? Metadata.toJSON(message.didDocumentMetadata)
         : undefined);
-    message.didResolutionMetadata !== undefined &&
-      (obj.didResolutionMetadata = message.didResolutionMetadata
-        ? DidResolveMeta.toJSON(message.didResolutionMetadata)
-        : undefined);
     return obj;
   },
 
@@ -1133,11 +914,6 @@ export const DidResolutionResponse = {
     object: DeepPartial<DidResolutionResponse>
   ): DidResolutionResponse {
     const message = { ...baseDidResolutionResponse } as DidResolutionResponse;
-    if (object._at_context !== undefined && object._at_context !== null) {
-      message._at_context = object._at_context;
-    } else {
-      message._at_context = "";
-    }
     if (object.didDocument !== undefined && object.didDocument !== null) {
       message.didDocument = Did.fromPartial(object.didDocument);
     } else {
@@ -1153,15 +929,169 @@ export const DidResolutionResponse = {
     } else {
       message.didDocumentMetadata = undefined;
     }
-    if (
-      object.didResolutionMetadata !== undefined &&
-      object.didResolutionMetadata !== null
-    ) {
-      message.didResolutionMetadata = DidResolveMeta.fromPartial(
-        object.didResolutionMetadata
+    return message;
+  },
+};
+
+const baseQueryCredentialsRequest: object = {};
+
+export const QueryCredentialsRequest = {
+  encode(
+    message: QueryCredentialsRequest,
+    writer: Writer = Writer.create()
+  ): Writer {
+    if (message.pagination !== undefined) {
+      PageRequest.encode(message.pagination, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): QueryCredentialsRequest {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = {
+      ...baseQueryCredentialsRequest,
+    } as QueryCredentialsRequest;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.pagination = PageRequest.decode(reader, reader.uint32());
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryCredentialsRequest {
+    const message = {
+      ...baseQueryCredentialsRequest,
+    } as QueryCredentialsRequest;
+    if (object.pagination !== undefined && object.pagination !== null) {
+      message.pagination = PageRequest.fromJSON(object.pagination);
+    } else {
+      message.pagination = undefined;
+    }
+    return message;
+  },
+
+  toJSON(message: QueryCredentialsRequest): unknown {
+    const obj: any = {};
+    message.pagination !== undefined &&
+      (obj.pagination = message.pagination
+        ? PageRequest.toJSON(message.pagination)
+        : undefined);
+    return obj;
+  },
+
+  fromPartial(
+    object: DeepPartial<QueryCredentialsRequest>
+  ): QueryCredentialsRequest {
+    const message = {
+      ...baseQueryCredentialsRequest,
+    } as QueryCredentialsRequest;
+    if (object.pagination !== undefined && object.pagination !== null) {
+      message.pagination = PageRequest.fromPartial(object.pagination);
+    } else {
+      message.pagination = undefined;
+    }
+    return message;
+  },
+};
+
+const baseQueryCredentialsResponse: object = { totalCount: 0 };
+
+export const QueryCredentialsResponse = {
+  encode(
+    message: QueryCredentialsResponse,
+    writer: Writer = Writer.create()
+  ): Writer {
+    if (message.totalCount !== 0) {
+      writer.uint32(8).uint64(message.totalCount);
+    }
+    for (const v of message.credentials) {
+      Credential.encode(v!, writer.uint32(18).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(
+    input: Reader | Uint8Array,
+    length?: number
+  ): QueryCredentialsResponse {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = {
+      ...baseQueryCredentialsResponse,
+    } as QueryCredentialsResponse;
+    message.credentials = [];
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.totalCount = longToNumber(reader.uint64() as Long);
+          break;
+        case 2:
+          message.credentials.push(Credential.decode(reader, reader.uint32()));
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryCredentialsResponse {
+    const message = {
+      ...baseQueryCredentialsResponse,
+    } as QueryCredentialsResponse;
+    message.credentials = [];
+    if (object.totalCount !== undefined && object.totalCount !== null) {
+      message.totalCount = Number(object.totalCount);
+    } else {
+      message.totalCount = 0;
+    }
+    if (object.credentials !== undefined && object.credentials !== null) {
+      for (const e of object.credentials) {
+        message.credentials.push(Credential.fromJSON(e));
+      }
+    }
+    return message;
+  },
+
+  toJSON(message: QueryCredentialsResponse): unknown {
+    const obj: any = {};
+    message.totalCount !== undefined && (obj.totalCount = message.totalCount);
+    if (message.credentials) {
+      obj.credentials = message.credentials.map((e) =>
+        e ? Credential.toJSON(e) : undefined
       );
     } else {
-      message.didResolutionMetadata = undefined;
+      obj.credentials = [];
+    }
+    return obj;
+  },
+
+  fromPartial(
+    object: DeepPartial<QueryCredentialsResponse>
+  ): QueryCredentialsResponse {
+    const message = {
+      ...baseQueryCredentialsResponse,
+    } as QueryCredentialsResponse;
+    message.credentials = [];
+    if (object.totalCount !== undefined && object.totalCount !== null) {
+      message.totalCount = object.totalCount;
+    } else {
+      message.totalCount = 0;
+    }
+    if (object.credentials !== undefined && object.credentials !== null) {
+      for (const e of object.credentials) {
+        message.credentials.push(Credential.fromPartial(e));
+      }
     }
     return message;
   },
@@ -1289,22 +1219,26 @@ export const MarshalOutput = {
 export interface Query {
   /** Parameters queries the parameters of the module. */
   Params(request: QueryParamsRequest): Promise<QueryParamsResponse>;
-  /** Queries a list of GetSchema items. */
+  /** Get the Schema for a specified Schema Id */
   GetSchema(request: QueryGetSchemaRequest): Promise<QueryGetSchemaResponse>;
-  /** Schema Param */
+  /** Get the list of Schemas and count */
   SchemaParam(
     request: QuerySchemaParamRequest
   ): Promise<QuerySchemaParamResponse>;
-  /** Resolve DID */
+  /** Get the Did Document for a specified Did Id */
   ResolveDid(
     request: QueryGetDidDocByIdRequest
-  ): Promise<QueryGetDidDocByIdResponse>;
-  /** Did Param */
+  ): Promise<DidResolutionResponse>;
+  /** Get the list of registered Did Documents and count */
   DidParam(request: QueryDidParamRequest): Promise<QueryDidParamResponse>;
-  /** Query Credential */
+  /** Get the Credential Status for a given credential Id */
   QueryCredential(
     request: QueryCredentialRequest
   ): Promise<QueryCredentialResponse>;
+  /** Get all the registed Credential Statuses */
+  QueryCredentials(
+    request: QueryCredentialsRequest
+  ): Promise<QueryCredentialsResponse>;
 }
 
 export class QueryClientImpl implements Query {
@@ -1350,7 +1284,7 @@ export class QueryClientImpl implements Query {
 
   ResolveDid(
     request: QueryGetDidDocByIdRequest
-  ): Promise<QueryGetDidDocByIdResponse> {
+  ): Promise<DidResolutionResponse> {
     const data = QueryGetDidDocByIdRequest.encode(request).finish();
     const promise = this.rpc.request(
       "hypersignprotocol.hidnode.ssi.Query",
@@ -1358,7 +1292,7 @@ export class QueryClientImpl implements Query {
       data
     );
     return promise.then((data) =>
-      QueryGetDidDocByIdResponse.decode(new Reader(data))
+      DidResolutionResponse.decode(new Reader(data))
     );
   }
 
@@ -1385,6 +1319,20 @@ export class QueryClientImpl implements Query {
     );
     return promise.then((data) =>
       QueryCredentialResponse.decode(new Reader(data))
+    );
+  }
+
+  QueryCredentials(
+    request: QueryCredentialsRequest
+  ): Promise<QueryCredentialsResponse> {
+    const data = QueryCredentialsRequest.encode(request).finish();
+    const promise = this.rpc.request(
+      "hypersignprotocol.hidnode.ssi.Query",
+      "QueryCredentials",
+      data
+    );
+    return promise.then((data) =>
+      QueryCredentialsResponse.decode(new Reader(data))
     );
   }
 }

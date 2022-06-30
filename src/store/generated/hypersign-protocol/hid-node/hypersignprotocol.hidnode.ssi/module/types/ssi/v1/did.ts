@@ -25,11 +25,6 @@ export interface Metadata {
   versionId: string;
 }
 
-export interface DidResolveMeta {
-  retrieved: string;
-  error: string;
-}
-
 export interface VerificationMethod {
   id: string;
   type: string;
@@ -495,78 +490,6 @@ export const Metadata = {
       message.versionId = object.versionId;
     } else {
       message.versionId = "";
-    }
-    return message;
-  },
-};
-
-const baseDidResolveMeta: object = { retrieved: "", error: "" };
-
-export const DidResolveMeta = {
-  encode(message: DidResolveMeta, writer: Writer = Writer.create()): Writer {
-    if (message.retrieved !== "") {
-      writer.uint32(18).string(message.retrieved);
-    }
-    if (message.error !== "") {
-      writer.uint32(26).string(message.error);
-    }
-    return writer;
-  },
-
-  decode(input: Reader | Uint8Array, length?: number): DidResolveMeta {
-    const reader = input instanceof Uint8Array ? new Reader(input) : input;
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseDidResolveMeta } as DidResolveMeta;
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 2:
-          message.retrieved = reader.string();
-          break;
-        case 3:
-          message.error = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): DidResolveMeta {
-    const message = { ...baseDidResolveMeta } as DidResolveMeta;
-    if (object.retrieved !== undefined && object.retrieved !== null) {
-      message.retrieved = String(object.retrieved);
-    } else {
-      message.retrieved = "";
-    }
-    if (object.error !== undefined && object.error !== null) {
-      message.error = String(object.error);
-    } else {
-      message.error = "";
-    }
-    return message;
-  },
-
-  toJSON(message: DidResolveMeta): unknown {
-    const obj: any = {};
-    message.retrieved !== undefined && (obj.retrieved = message.retrieved);
-    message.error !== undefined && (obj.error = message.error);
-    return obj;
-  },
-
-  fromPartial(object: DeepPartial<DidResolveMeta>): DidResolveMeta {
-    const message = { ...baseDidResolveMeta } as DidResolveMeta;
-    if (object.retrieved !== undefined && object.retrieved !== null) {
-      message.retrieved = object.retrieved;
-    } else {
-      message.retrieved = "";
-    }
-    if (object.error !== undefined && object.error !== null) {
-      message.error = object.error;
-    } else {
-      message.error = "";
     }
     return message;
   },
