@@ -1,10 +1,10 @@
-import { Params } from "../../ssi/v1/params";
 import { Writer, Reader } from "protobufjs/minimal";
 export declare const protobufPackage = "hypersignprotocol.hidnode.ssi";
 /** GenesisState defines the ssi module's genesis state. */
 export interface GenesisState {
-    /** this line is used by starport scaffolding # genesis/proto/state */
-    params: Params | undefined;
+    /** TODO: Once did method spec has been confirmed, did_method should be removed */
+    didMethod: string;
+    didNamespace: string;
 }
 export declare const GenesisState: {
     encode(message: GenesisState, writer?: Writer): Writer;

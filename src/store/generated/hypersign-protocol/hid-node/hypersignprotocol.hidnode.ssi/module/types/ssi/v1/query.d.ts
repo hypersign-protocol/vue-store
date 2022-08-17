@@ -1,9 +1,16 @@
 import { Reader, Writer } from "protobufjs/minimal";
+import { Credential } from "../../ssi/v1/credential";
 import { Params } from "../../ssi/v1/params";
 import { Schema } from "../../ssi/v1/schema";
 import { PageRequest } from "../../cosmos/base/query/v1beta1/pagination";
-import { Did, Metadata, DidResolveMeta } from "../../ssi/v1/did";
+import { Did, Metadata } from "../../ssi/v1/did";
 export declare const protobufPackage = "hypersignprotocol.hidnode.ssi";
+export interface QueryCredentialRequest {
+    credId: string;
+}
+export interface QueryCredentialResponse {
+    credStatus: Credential | undefined;
+}
 /** QueryParamsRequest is request type for the Query/Params RPC method. */
 export interface QueryParamsRequest {
 }
@@ -27,13 +34,6 @@ export interface QuerySchemaParamResponse {
 }
 export interface QueryGetDidDocByIdRequest {
     didId: string;
-    versionId: string;
-}
-export interface QueryGetDidDocByIdResponse {
-    AtContext: string;
-    didDocument: Did | undefined;
-    didDocumentMetadata: Metadata | undefined;
-    didResolutionMetadata: DidResolveMeta | undefined;
 }
 export interface QueryDidParamRequest {
     count: boolean;
@@ -44,11 +44,36 @@ export interface QueryDidParamResponse {
     didDocList: DidResolutionResponse[];
 }
 export interface DidResolutionResponse {
-    AtContext: string;
     didDocument: Did | undefined;
     didDocumentMetadata: Metadata | undefined;
-    didResolutionMetadata: DidResolveMeta | undefined;
 }
+export interface QueryCredentialsRequest {
+    pagination: PageRequest | undefined;
+}
+export interface QueryCredentialsResponse {
+    totalCount: number;
+    credentials: Credential[];
+}
+export interface MarshalInput {
+    stringInput: string;
+}
+export interface MarshalOutput {
+    unmarshalOutput: string;
+}
+export declare const QueryCredentialRequest: {
+    encode(message: QueryCredentialRequest, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): QueryCredentialRequest;
+    fromJSON(object: any): QueryCredentialRequest;
+    toJSON(message: QueryCredentialRequest): unknown;
+    fromPartial(object: DeepPartial<QueryCredentialRequest>): QueryCredentialRequest;
+};
+export declare const QueryCredentialResponse: {
+    encode(message: QueryCredentialResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): QueryCredentialResponse;
+    fromJSON(object: any): QueryCredentialResponse;
+    toJSON(message: QueryCredentialResponse): unknown;
+    fromPartial(object: DeepPartial<QueryCredentialResponse>): QueryCredentialResponse;
+};
 export declare const QueryParamsRequest: {
     encode(_: QueryParamsRequest, writer?: Writer): Writer;
     decode(input: Reader | Uint8Array, length?: number): QueryParamsRequest;
@@ -98,13 +123,6 @@ export declare const QueryGetDidDocByIdRequest: {
     toJSON(message: QueryGetDidDocByIdRequest): unknown;
     fromPartial(object: DeepPartial<QueryGetDidDocByIdRequest>): QueryGetDidDocByIdRequest;
 };
-export declare const QueryGetDidDocByIdResponse: {
-    encode(message: QueryGetDidDocByIdResponse, writer?: Writer): Writer;
-    decode(input: Reader | Uint8Array, length?: number): QueryGetDidDocByIdResponse;
-    fromJSON(object: any): QueryGetDidDocByIdResponse;
-    toJSON(message: QueryGetDidDocByIdResponse): unknown;
-    fromPartial(object: DeepPartial<QueryGetDidDocByIdResponse>): QueryGetDidDocByIdResponse;
-};
 export declare const QueryDidParamRequest: {
     encode(message: QueryDidParamRequest, writer?: Writer): Writer;
     decode(input: Reader | Uint8Array, length?: number): QueryDidParamRequest;
@@ -126,18 +144,50 @@ export declare const DidResolutionResponse: {
     toJSON(message: DidResolutionResponse): unknown;
     fromPartial(object: DeepPartial<DidResolutionResponse>): DidResolutionResponse;
 };
+export declare const QueryCredentialsRequest: {
+    encode(message: QueryCredentialsRequest, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): QueryCredentialsRequest;
+    fromJSON(object: any): QueryCredentialsRequest;
+    toJSON(message: QueryCredentialsRequest): unknown;
+    fromPartial(object: DeepPartial<QueryCredentialsRequest>): QueryCredentialsRequest;
+};
+export declare const QueryCredentialsResponse: {
+    encode(message: QueryCredentialsResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): QueryCredentialsResponse;
+    fromJSON(object: any): QueryCredentialsResponse;
+    toJSON(message: QueryCredentialsResponse): unknown;
+    fromPartial(object: DeepPartial<QueryCredentialsResponse>): QueryCredentialsResponse;
+};
+export declare const MarshalInput: {
+    encode(message: MarshalInput, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MarshalInput;
+    fromJSON(object: any): MarshalInput;
+    toJSON(message: MarshalInput): unknown;
+    fromPartial(object: DeepPartial<MarshalInput>): MarshalInput;
+};
+export declare const MarshalOutput: {
+    encode(message: MarshalOutput, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MarshalOutput;
+    fromJSON(object: any): MarshalOutput;
+    toJSON(message: MarshalOutput): unknown;
+    fromPartial(object: DeepPartial<MarshalOutput>): MarshalOutput;
+};
 /** Query defines the gRPC querier service. */
 export interface Query {
     /** Parameters queries the parameters of the module. */
     Params(request: QueryParamsRequest): Promise<QueryParamsResponse>;
-    /** Queries a list of GetSchema items. */
+    /** Get the Schema for a specified Schema Id */
     GetSchema(request: QueryGetSchemaRequest): Promise<QueryGetSchemaResponse>;
-    /** Schema Param */
+    /** Get the list of Schemas and count */
     SchemaParam(request: QuerySchemaParamRequest): Promise<QuerySchemaParamResponse>;
-    /** Resolve DID */
-    ResolveDid(request: QueryGetDidDocByIdRequest): Promise<QueryGetDidDocByIdResponse>;
-    /** Did Param */
+    /** Get the Did Document for a specified Did Id */
+    ResolveDid(request: QueryGetDidDocByIdRequest): Promise<DidResolutionResponse>;
+    /** Get the list of registered Did Documents and count */
     DidParam(request: QueryDidParamRequest): Promise<QueryDidParamResponse>;
+    /** Get the Credential Status for a given credential Id */
+    QueryCredential(request: QueryCredentialRequest): Promise<QueryCredentialResponse>;
+    /** Get all the registed Credential Statuses */
+    QueryCredentials(request: QueryCredentialsRequest): Promise<QueryCredentialsResponse>;
 }
 export declare class QueryClientImpl implements Query {
     private readonly rpc;
@@ -145,8 +195,10 @@ export declare class QueryClientImpl implements Query {
     Params(request: QueryParamsRequest): Promise<QueryParamsResponse>;
     GetSchema(request: QueryGetSchemaRequest): Promise<QueryGetSchemaResponse>;
     SchemaParam(request: QuerySchemaParamRequest): Promise<QuerySchemaParamResponse>;
-    ResolveDid(request: QueryGetDidDocByIdRequest): Promise<QueryGetDidDocByIdResponse>;
+    ResolveDid(request: QueryGetDidDocByIdRequest): Promise<DidResolutionResponse>;
     DidParam(request: QueryDidParamRequest): Promise<QueryDidParamResponse>;
+    QueryCredential(request: QueryCredentialRequest): Promise<QueryCredentialResponse>;
+    QueryCredentials(request: QueryCredentialsRequest): Promise<QueryCredentialsResponse>;
 }
 interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;

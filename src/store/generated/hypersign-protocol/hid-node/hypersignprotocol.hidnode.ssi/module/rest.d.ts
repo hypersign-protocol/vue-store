@@ -7,6 +7,34 @@ export interface RpcStatus {
     message?: string;
     details?: ProtobufAny[];
 }
+export interface SsiClaim {
+    id?: string;
+    currentStatus?: string;
+    statusReason?: string;
+}
+export interface SsiCredential {
+    claim?: SsiClaim;
+    issuer?: string;
+    issuanceDate?: string;
+    expirationDate?: string;
+    credentialHash?: string;
+    proof?: SsiCredentialProof;
+}
+export interface SsiCredentialProof {
+    type?: string;
+    created?: string;
+    updated?: string;
+    verificationMethod?: string;
+    proofPurpose?: string;
+    proofValue?: string;
+}
+export interface SsiCredentialStatus {
+    claim?: SsiClaim;
+    issuer?: string;
+    issuanceDate?: string;
+    expirationDate?: string;
+    credentialHash?: string;
+}
 export interface SsiDid {
     context?: string[];
     id?: string;
@@ -21,14 +49,8 @@ export interface SsiDid {
     service?: SsiService[];
 }
 export interface SsiDidResolutionResponse {
-    AtContext?: string;
     didDocument?: SsiDid;
     didDocumentMetadata?: SsiMetadata;
-    didResolutionMetadata?: SsiDidResolveMeta;
-}
-export interface SsiDidResolveMeta {
-    retrieved?: string;
-    error?: string;
 }
 export interface SsiMetadata {
     created?: string;
@@ -48,6 +70,10 @@ export interface SsiMsgDeactivateDIDResponse {
     /** @format uint64 */
     id?: string;
 }
+export interface SsiMsgRegisterCredentialStatusResponse {
+    /** @format uint64 */
+    id?: string;
+}
 export interface SsiMsgUpdateDIDResponse {
     updateId?: string;
 }
@@ -55,16 +81,18 @@ export interface SsiMsgUpdateDIDResponse {
  * Params defines the parameters for the module.
  */
 export declare type SsiParams = object;
+export interface SsiQueryCredentialResponse {
+    credStatus?: SsiCredential;
+}
+export interface SsiQueryCredentialsResponse {
+    /** @format uint64 */
+    totalCount?: string;
+    credentials?: SsiCredential[];
+}
 export interface SsiQueryDidParamResponse {
     /** @format uint64 */
     totalDidCount?: string;
     didDocList?: SsiDidResolutionResponse[];
-}
-export interface SsiQueryGetDidDocByIdResponse {
-    AtContext?: string;
-    didDocument?: SsiDid;
-    didDocumentMetadata?: SsiMetadata;
-    didResolutionMetadata?: SsiDidResolveMeta;
 }
 export interface SsiQueryGetSchemaResponse {
     schema?: SsiSchema[];
@@ -89,6 +117,23 @@ export interface SsiSchema {
     author?: string;
     authored?: string;
     schema?: SsiSchemaProperty;
+    proof?: SsiSchemaProof;
+}
+export interface SsiSchemaDocument {
+    type?: string;
+    modelVersion?: string;
+    id?: string;
+    name?: string;
+    author?: string;
+    authored?: string;
+    schema?: SsiSchemaProperty;
+}
+export interface SsiSchemaProof {
+    type?: string;
+    created?: string;
+    verificationMethod?: string;
+    proofPurpose?: string;
+    proofValue?: string;
 }
 export interface SsiSchemaProperty {
     schema?: string;
@@ -208,7 +253,7 @@ export declare class HttpClient<SecurityDataType = unknown> {
     request: <T = any, E = any>({ body, secure, path, type, query, format, baseUrl, cancelToken, ...params }: FullRequestParams) => Promise<HttpResponse<T, E>>;
 }
 /**
- * @title ssi/v1/did.proto
+ * @title ssi/v1/credential.proto
  * @version version not set
  */
 export declare class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
@@ -216,8 +261,32 @@ export declare class Api<SecurityDataType extends unknown> extends HttpClient<Se
      * No description
      *
      * @tags Query
+     * @name QueryQueryCredentials
+     * @summary Get all the registed Credential Statuses
+     * @request GET:/hypersign-protocol/hidnode/ssi/credential
+     */
+    queryQueryCredentials: (query?: {
+        "pagination.key"?: string;
+        "pagination.offset"?: string;
+        "pagination.limit"?: string;
+        "pagination.countTotal"?: boolean;
+        "pagination.reverse"?: boolean;
+    }, params?: RequestParams) => Promise<HttpResponse<SsiQueryCredentialsResponse, RpcStatus>>;
+    /**
+     * No description
+     *
+     * @tags Query
+     * @name QueryQueryCredential
+     * @summary Get the Credential Status for a given credential Id
+     * @request GET:/hypersign-protocol/hidnode/ssi/credential/{credId}
+     */
+    queryQueryCredential: (credId: string, params?: RequestParams) => Promise<HttpResponse<SsiQueryCredentialResponse, RpcStatus>>;
+    /**
+     * No description
+     *
+     * @tags Query
      * @name QueryDidParam
-     * @summary Did Param
+     * @summary Get the list of registered Did Documents and count
      * @request GET:/hypersign-protocol/hidnode/ssi/did
      */
     queryDidParam: (query?: {
@@ -233,18 +302,16 @@ export declare class Api<SecurityDataType extends unknown> extends HttpClient<Se
      *
      * @tags Query
      * @name QueryResolveDid
-     * @summary Resolve DID
+     * @summary Get the Did Document for a specified Did Id
      * @request GET:/hypersign-protocol/hidnode/ssi/did/{didId}
      */
-    queryResolveDid: (didId: string, query?: {
-        versionId?: string;
-    }, params?: RequestParams) => Promise<HttpResponse<SsiQueryGetDidDocByIdResponse, RpcStatus>>;
+    queryResolveDid: (didId: string, params?: RequestParams) => Promise<HttpResponse<SsiDidResolutionResponse, RpcStatus>>;
     /**
      * No description
      *
      * @tags Query
      * @name QuerySchemaParam
-     * @summary Schema Param
+     * @summary Get the list of Schemas and count
      * @request GET:/hypersign-protocol/hidnode/ssi/schema
      */
     querySchemaParam: (query?: {
@@ -259,7 +326,7 @@ export declare class Api<SecurityDataType extends unknown> extends HttpClient<Se
      *
      * @tags Query
      * @name QueryGetSchema
-     * @summary Queries a list of GetSchema items.
+     * @summary Get the Schema for a specified Schema Id
      * @request GET:/hypersign-protocol/hidnode/ssi/schema/{schemaId}
      */
     queryGetSchema: (schemaId: string, params?: RequestParams) => Promise<HttpResponse<SsiQueryGetSchemaResponse, RpcStatus>>;

@@ -1,18 +1,24 @@
 import { txClient, queryClient, MissingWalletError, registry } from './module';
 // @ts-ignore
 import { SpVuexError } from '@starport/vuex';
+import { Claim } from "./module/types/ssi/v1/credential";
+import { CredentialStatus } from "./module/types/ssi/v1/credential";
+import { CredentialProof } from "./module/types/ssi/v1/credential";
+import { Credential } from "./module/types/ssi/v1/credential";
 import { Did } from "./module/types/ssi/v1/did";
 import { Metadata } from "./module/types/ssi/v1/did";
-import { DidResolveMeta } from "./module/types/ssi/v1/did";
 import { VerificationMethod } from "./module/types/ssi/v1/did";
 import { Service } from "./module/types/ssi/v1/did";
 import { SignInfo } from "./module/types/ssi/v1/did";
 import { DidDocument } from "./module/types/ssi/v1/did";
 import { Params } from "./module/types/ssi/v1/params";
-import { DidResolutionResponse } from "./module/types/ssi/v1/query";
-import { Schema } from "./module/types/ssi/v1/schema";
+import { MarshalInput } from "./module/types/ssi/v1/query";
+import { MarshalOutput } from "./module/types/ssi/v1/query";
+import { SchemaDocument } from "./module/types/ssi/v1/schema";
 import { SchemaProperty } from "./module/types/ssi/v1/schema";
-export { Did, Metadata, DidResolveMeta, VerificationMethod, Service, SignInfo, DidDocument, Params, DidResolutionResponse, Schema, SchemaProperty };
+import { SchemaProof } from "./module/types/ssi/v1/schema";
+import { Schema } from "./module/types/ssi/v1/schema";
+export { Claim, CredentialStatus, CredentialProof, Credential, Did, Metadata, VerificationMethod, Service, SignInfo, DidDocument, Params, MarshalInput, MarshalOutput, SchemaDocument, SchemaProperty, SchemaProof, Schema };
 async function initTxClient(vuexGetters) {
     return await txClient(vuexGetters['common/wallet/signer'], {
         addr: vuexGetters['common/env/apiTendermint']
@@ -51,18 +57,26 @@ const getDefaultState = () => {
         SchemaParam: {},
         ResolveDid: {},
         DidParam: {},
+        QueryCredential: {},
+        QueryCredentials: {},
         _Structure: {
+            Claim: getStructure(Claim.fromPartial({})),
+            CredentialStatus: getStructure(CredentialStatus.fromPartial({})),
+            CredentialProof: getStructure(CredentialProof.fromPartial({})),
+            Credential: getStructure(Credential.fromPartial({})),
             Did: getStructure(Did.fromPartial({})),
             Metadata: getStructure(Metadata.fromPartial({})),
-            DidResolveMeta: getStructure(DidResolveMeta.fromPartial({})),
             VerificationMethod: getStructure(VerificationMethod.fromPartial({})),
             Service: getStructure(Service.fromPartial({})),
             SignInfo: getStructure(SignInfo.fromPartial({})),
             DidDocument: getStructure(DidDocument.fromPartial({})),
             Params: getStructure(Params.fromPartial({})),
-            DidResolutionResponse: getStructure(DidResolutionResponse.fromPartial({})),
-            Schema: getStructure(Schema.fromPartial({})),
+            MarshalInput: getStructure(MarshalInput.fromPartial({})),
+            MarshalOutput: getStructure(MarshalOutput.fromPartial({})),
+            SchemaDocument: getStructure(SchemaDocument.fromPartial({})),
             SchemaProperty: getStructure(SchemaProperty.fromPartial({})),
+            SchemaProof: getStructure(SchemaProof.fromPartial({})),
+            Schema: getStructure(Schema.fromPartial({})),
         },
         _Registry: registry,
         _Subscriptions: new Set(),
@@ -117,6 +131,18 @@ export default {
                 params.query = null;
             }
             return state.DidParam[JSON.stringify(params)] ?? {};
+        },
+        getQueryCredential: (state) => (params = { params: {} }) => {
+            if (!params.query) {
+                params.query = null;
+            }
+            return state.QueryCredential[JSON.stringify(params)] ?? {};
+        },
+        getQueryCredentials: (state) => (params = { params: {} }) => {
+            if (!params.query) {
+                params.query = null;
+            }
+            return state.QueryCredentials[JSON.stringify(params)] ?? {};
         },
         getTypeStructure: (state) => (type) => {
             return state._Structure[type].fields;
@@ -201,11 +227,7 @@ export default {
             try {
                 const key = params ?? {};
                 const queryClient = await initQueryClient(rootGetters);
-                let value = (await queryClient.queryResolveDid(key.didId, query)).data;
-                while (all && value.pagination && value.pagination.next_key != null) {
-                    let next_values = (await queryClient.queryResolveDid(key.didId, { ...query, 'pagination.key': value.pagination.next_key })).data;
-                    value = mergeResults(value, next_values);
-                }
+                let value = (await queryClient.queryResolveDid(key.didId)).data;
                 commit('QUERY', { query: 'ResolveDid', key: { params: { ...key }, query }, value });
                 if (subscribe)
                     commit('SUBSCRIBE', { action: 'QueryResolveDid', payload: { options: { all }, params: { ...key }, query } });
@@ -231,6 +253,72 @@ export default {
             }
             catch (e) {
                 throw new SpVuexError('QueryClient:QueryDidParam', 'API Node Unavailable. Could not perform query: ' + e.message);
+            }
+        },
+        async QueryQueryCredential({ commit, rootGetters, getters }, { options: { subscribe, all } = { subscribe: false, all: false }, params, query = null }) {
+            try {
+                const key = params ?? {};
+                const queryClient = await initQueryClient(rootGetters);
+                let value = (await queryClient.queryQueryCredential(key.credId)).data;
+                commit('QUERY', { query: 'QueryCredential', key: { params: { ...key }, query }, value });
+                if (subscribe)
+                    commit('SUBSCRIBE', { action: 'QueryQueryCredential', payload: { options: { all }, params: { ...key }, query } });
+                return getters['getQueryCredential']({ params: { ...key }, query }) ?? {};
+            }
+            catch (e) {
+                throw new SpVuexError('QueryClient:QueryQueryCredential', 'API Node Unavailable. Could not perform query: ' + e.message);
+            }
+        },
+        async QueryQueryCredentials({ commit, rootGetters, getters }, { options: { subscribe, all } = { subscribe: false, all: false }, params, query = null }) {
+            try {
+                const key = params ?? {};
+                const queryClient = await initQueryClient(rootGetters);
+                let value = (await queryClient.queryQueryCredentials(query)).data;
+                while (all && value.pagination && value.pagination.next_key != null) {
+                    let next_values = (await queryClient.queryQueryCredentials({ ...query, 'pagination.key': value.pagination.next_key })).data;
+                    value = mergeResults(value, next_values);
+                }
+                commit('QUERY', { query: 'QueryCredentials', key: { params: { ...key }, query }, value });
+                if (subscribe)
+                    commit('SUBSCRIBE', { action: 'QueryQueryCredentials', payload: { options: { all }, params: { ...key }, query } });
+                return getters['getQueryCredentials']({ params: { ...key }, query }) ?? {};
+            }
+            catch (e) {
+                throw new SpVuexError('QueryClient:QueryQueryCredentials', 'API Node Unavailable. Could not perform query: ' + e.message);
+            }
+        },
+        async sendMsgCreateSchema({ rootGetters }, { value, fee = [], memo = '' }) {
+            try {
+                const txClient = await initTxClient(rootGetters);
+                const msg = await txClient.msgCreateSchema(value);
+                const result = await txClient.signAndBroadcast([msg], { fee: { amount: fee,
+                        gas: "200000" }, memo });
+                return result;
+            }
+            catch (e) {
+                if (e == MissingWalletError) {
+                    throw new SpVuexError('TxClient:MsgCreateSchema:Init', 'Could not initialize signing client. Wallet is required.');
+                }
+                else {
+                    throw new SpVuexError('TxClient:MsgCreateSchema:Send', 'Could not broadcast Tx: ' + e.message);
+                }
+            }
+        },
+        async sendMsgRegisterCredentialStatus({ rootGetters }, { value, fee = [], memo = '' }) {
+            try {
+                const txClient = await initTxClient(rootGetters);
+                const msg = await txClient.msgRegisterCredentialStatus(value);
+                const result = await txClient.signAndBroadcast([msg], { fee: { amount: fee,
+                        gas: "200000" }, memo });
+                return result;
+            }
+            catch (e) {
+                if (e == MissingWalletError) {
+                    throw new SpVuexError('TxClient:MsgRegisterCredentialStatus:Init', 'Could not initialize signing client. Wallet is required.');
+                }
+                else {
+                    throw new SpVuexError('TxClient:MsgRegisterCredentialStatus:Send', 'Could not broadcast Tx: ' + e.message);
+                }
             }
         },
         async sendMsgCreateDID({ rootGetters }, { value, fee = [], memo = '' }) {
@@ -284,20 +372,33 @@ export default {
                 }
             }
         },
-        async sendMsgCreateSchema({ rootGetters }, { value, fee = [], memo = '' }) {
+        async MsgCreateSchema({ rootGetters }, { value }) {
             try {
                 const txClient = await initTxClient(rootGetters);
                 const msg = await txClient.msgCreateSchema(value);
-                const result = await txClient.signAndBroadcast([msg], { fee: { amount: fee,
-                        gas: "200000" }, memo });
-                return result;
+                return msg;
             }
             catch (e) {
                 if (e == MissingWalletError) {
                     throw new SpVuexError('TxClient:MsgCreateSchema:Init', 'Could not initialize signing client. Wallet is required.');
                 }
                 else {
-                    throw new SpVuexError('TxClient:MsgCreateSchema:Send', 'Could not broadcast Tx: ' + e.message);
+                    throw new SpVuexError('TxClient:MsgCreateSchema:Create', 'Could not create message: ' + e.message);
+                }
+            }
+        },
+        async MsgRegisterCredentialStatus({ rootGetters }, { value }) {
+            try {
+                const txClient = await initTxClient(rootGetters);
+                const msg = await txClient.msgRegisterCredentialStatus(value);
+                return msg;
+            }
+            catch (e) {
+                if (e == MissingWalletError) {
+                    throw new SpVuexError('TxClient:MsgRegisterCredentialStatus:Init', 'Could not initialize signing client. Wallet is required.');
+                }
+                else {
+                    throw new SpVuexError('TxClient:MsgRegisterCredentialStatus:Create', 'Could not create message: ' + e.message);
                 }
             }
         },
@@ -343,21 +444,6 @@ export default {
                 }
                 else {
                     throw new SpVuexError('TxClient:MsgUpdateDID:Create', 'Could not create message: ' + e.message);
-                }
-            }
-        },
-        async MsgCreateSchema({ rootGetters }, { value }) {
-            try {
-                const txClient = await initTxClient(rootGetters);
-                const msg = await txClient.msgCreateSchema(value);
-                return msg;
-            }
-            catch (e) {
-                if (e == MissingWalletError) {
-                    throw new SpVuexError('TxClient:MsgCreateSchema:Init', 'Could not initialize signing client. Wallet is required.');
-                }
-                else {
-                    throw new SpVuexError('TxClient:MsgCreateSchema:Create', 'Could not create message: ' + e.message);
                 }
             }
         },

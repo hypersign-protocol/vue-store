@@ -1,12 +1,14 @@
 /* eslint-disable */
-import { Params } from "../../ssi/v1/params";
 import { Writer, Reader } from "protobufjs/minimal";
 export const protobufPackage = "hypersignprotocol.hidnode.ssi";
-const baseGenesisState = {};
+const baseGenesisState = { didMethod: "", didNamespace: "" };
 export const GenesisState = {
     encode(message, writer = Writer.create()) {
-        if (message.params !== undefined) {
-            Params.encode(message.params, writer.uint32(10).fork()).ldelim();
+        if (message.didMethod !== "") {
+            writer.uint32(10).string(message.didMethod);
+        }
+        if (message.didNamespace !== "") {
+            writer.uint32(18).string(message.didNamespace);
         }
         return writer;
     },
@@ -18,7 +20,10 @@ export const GenesisState = {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
-                    message.params = Params.decode(reader, reader.uint32());
+                    message.didMethod = reader.string();
+                    break;
+                case 2:
+                    message.didNamespace = reader.string();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -29,27 +34,40 @@ export const GenesisState = {
     },
     fromJSON(object) {
         const message = { ...baseGenesisState };
-        if (object.params !== undefined && object.params !== null) {
-            message.params = Params.fromJSON(object.params);
+        if (object.didMethod !== undefined && object.didMethod !== null) {
+            message.didMethod = String(object.didMethod);
         }
         else {
-            message.params = undefined;
+            message.didMethod = "";
+        }
+        if (object.didNamespace !== undefined && object.didNamespace !== null) {
+            message.didNamespace = String(object.didNamespace);
+        }
+        else {
+            message.didNamespace = "";
         }
         return message;
     },
     toJSON(message) {
         const obj = {};
-        message.params !== undefined &&
-            (obj.params = message.params ? Params.toJSON(message.params) : undefined);
+        message.didMethod !== undefined && (obj.didMethod = message.didMethod);
+        message.didNamespace !== undefined &&
+            (obj.didNamespace = message.didNamespace);
         return obj;
     },
     fromPartial(object) {
         const message = { ...baseGenesisState };
-        if (object.params !== undefined && object.params !== null) {
-            message.params = Params.fromPartial(object.params);
+        if (object.didMethod !== undefined && object.didMethod !== null) {
+            message.didMethod = object.didMethod;
         }
         else {
-            message.params = undefined;
+            message.didMethod = "";
+        }
+        if (object.didNamespace !== undefined && object.didNamespace !== null) {
+            message.didNamespace = object.didNamespace;
+        }
+        else {
+            message.didNamespace = "";
         }
         return message;
     },

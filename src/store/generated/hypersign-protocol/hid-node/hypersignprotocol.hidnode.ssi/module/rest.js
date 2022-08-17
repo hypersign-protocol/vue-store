@@ -130,7 +130,7 @@ export class HttpClient {
     }
 }
 /**
- * @title ssi/v1/did.proto
+ * @title ssi/v1/credential.proto
  * @version version not set
  */
 export class Api extends HttpClient {
@@ -140,8 +140,37 @@ export class Api extends HttpClient {
          * No description
          *
          * @tags Query
+         * @name QueryQueryCredentials
+         * @summary Get all the registed Credential Statuses
+         * @request GET:/hypersign-protocol/hidnode/ssi/credential
+         */
+        this.queryQueryCredentials = (query, params = {}) => this.request({
+            path: `/hypersign-protocol/hidnode/ssi/credential`,
+            method: "GET",
+            query: query,
+            format: "json",
+            ...params,
+        });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QueryQueryCredential
+         * @summary Get the Credential Status for a given credential Id
+         * @request GET:/hypersign-protocol/hidnode/ssi/credential/{credId}
+         */
+        this.queryQueryCredential = (credId, params = {}) => this.request({
+            path: `/hypersign-protocol/hidnode/ssi/credential/${credId}`,
+            method: "GET",
+            format: "json",
+            ...params,
+        });
+        /**
+         * No description
+         *
+         * @tags Query
          * @name QueryDidParam
-         * @summary Did Param
+         * @summary Get the list of registered Did Documents and count
          * @request GET:/hypersign-protocol/hidnode/ssi/did
          */
         this.queryDidParam = (query, params = {}) => this.request({
@@ -156,13 +185,12 @@ export class Api extends HttpClient {
          *
          * @tags Query
          * @name QueryResolveDid
-         * @summary Resolve DID
+         * @summary Get the Did Document for a specified Did Id
          * @request GET:/hypersign-protocol/hidnode/ssi/did/{didId}
          */
-        this.queryResolveDid = (didId, query, params = {}) => this.request({
+        this.queryResolveDid = (didId, params = {}) => this.request({
             path: `/hypersign-protocol/hidnode/ssi/did/${didId}`,
             method: "GET",
-            query: query,
             format: "json",
             ...params,
         });
@@ -171,7 +199,7 @@ export class Api extends HttpClient {
          *
          * @tags Query
          * @name QuerySchemaParam
-         * @summary Schema Param
+         * @summary Get the list of Schemas and count
          * @request GET:/hypersign-protocol/hidnode/ssi/schema
          */
         this.querySchemaParam = (query, params = {}) => this.request({
@@ -186,7 +214,7 @@ export class Api extends HttpClient {
          *
          * @tags Query
          * @name QueryGetSchema
-         * @summary Queries a list of GetSchema items.
+         * @summary Get the Schema for a specified Schema Id
          * @request GET:/hypersign-protocol/hidnode/ssi/schema/{schemaId}
          */
         this.queryGetSchema = (schemaId, params = {}) => this.request({

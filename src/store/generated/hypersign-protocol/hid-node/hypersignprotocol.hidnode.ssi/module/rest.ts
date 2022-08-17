@@ -149,6 +149,25 @@ export interface SsiSchema {
   author?: string;
   authored?: string;
   schema?: SsiSchemaProperty;
+  proof?: SsiSchemaProof;
+}
+
+export interface SsiSchemaDocument {
+  type?: string;
+  modelVersion?: string;
+  id?: string;
+  name?: string;
+  author?: string;
+  authored?: string;
+  schema?: SsiSchemaProperty;
+}
+
+export interface SsiSchemaProof {
+  type?: string;
+  created?: string;
+  verificationMethod?: string;
+  proofPurpose?: string;
+  proofValue?: string;
 }
 
 export interface SsiSchemaProperty {

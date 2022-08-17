@@ -20,10 +20,6 @@ export interface Metadata {
     deactivated: boolean;
     versionId: string;
 }
-export interface DidResolveMeta {
-    retrieved: string;
-    error: string;
-}
 export interface VerificationMethod {
     id: string;
     type: string;
@@ -56,13 +52,6 @@ export declare const Metadata: {
     fromJSON(object: any): Metadata;
     toJSON(message: Metadata): unknown;
     fromPartial(object: DeepPartial<Metadata>): Metadata;
-};
-export declare const DidResolveMeta: {
-    encode(message: DidResolveMeta, writer?: Writer): Writer;
-    decode(input: Reader | Uint8Array, length?: number): DidResolveMeta;
-    fromJSON(object: any): DidResolveMeta;
-    toJSON(message: DidResolveMeta): unknown;
-    fromPartial(object: DeepPartial<DidResolveMeta>): DidResolveMeta;
 };
 export declare const VerificationMethod: {
     encode(message: VerificationMethod, writer?: Writer): Writer;

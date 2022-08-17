@@ -1,6 +1,7 @@
 import { Reader, Writer } from "protobufjs/minimal";
 import { Did, SignInfo } from "../../ssi/v1/did";
-import { Schema } from "../../ssi/v1/schema";
+import { SchemaDocument, SchemaProof } from "../../ssi/v1/schema";
+import { CredentialStatus, CredentialProof } from "../../ssi/v1/credential";
 export declare const protobufPackage = "hypersignprotocol.hidnode.ssi";
 export interface MsgCreateDID {
     didDocString: Did | undefined;
@@ -21,19 +22,27 @@ export interface MsgUpdateDIDResponse {
 }
 export interface MsgCreateSchema {
     creator: string;
-    schema: Schema | undefined;
-    signatures: SignInfo[];
+    schemaDoc: SchemaDocument | undefined;
+    schemaProof: SchemaProof | undefined;
 }
 export interface MsgCreateSchemaResponse {
     id: number;
 }
 export interface MsgDeactivateDID {
     creator: string;
-    didDocString: Did | undefined;
+    didId: string;
     versionId: string;
     signatures: SignInfo[];
 }
 export interface MsgDeactivateDIDResponse {
+    id: number;
+}
+export interface MsgRegisterCredentialStatus {
+    creator: string;
+    credentialStatus: CredentialStatus | undefined;
+    proof: CredentialProof | undefined;
+}
+export interface MsgRegisterCredentialStatusResponse {
     id: number;
 }
 export declare const MsgCreateDID: {
@@ -92,13 +101,28 @@ export declare const MsgDeactivateDIDResponse: {
     toJSON(message: MsgDeactivateDIDResponse): unknown;
     fromPartial(object: DeepPartial<MsgDeactivateDIDResponse>): MsgDeactivateDIDResponse;
 };
+export declare const MsgRegisterCredentialStatus: {
+    encode(message: MsgRegisterCredentialStatus, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgRegisterCredentialStatus;
+    fromJSON(object: any): MsgRegisterCredentialStatus;
+    toJSON(message: MsgRegisterCredentialStatus): unknown;
+    fromPartial(object: DeepPartial<MsgRegisterCredentialStatus>): MsgRegisterCredentialStatus;
+};
+export declare const MsgRegisterCredentialStatusResponse: {
+    encode(message: MsgRegisterCredentialStatusResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgRegisterCredentialStatusResponse;
+    fromJSON(object: any): MsgRegisterCredentialStatusResponse;
+    toJSON(message: MsgRegisterCredentialStatusResponse): unknown;
+    fromPartial(object: DeepPartial<MsgRegisterCredentialStatusResponse>): MsgRegisterCredentialStatusResponse;
+};
 /** Msg defines the Msg service. */
 export interface Msg {
     CreateDID(request: MsgCreateDID): Promise<MsgCreateDIDResponse>;
     UpdateDID(request: MsgUpdateDID): Promise<MsgUpdateDIDResponse>;
     CreateSchema(request: MsgCreateSchema): Promise<MsgCreateSchemaResponse>;
-    /** this line is used by starport scaffolding # proto/tx/rpc */
     DeactivateDID(request: MsgDeactivateDID): Promise<MsgDeactivateDIDResponse>;
+    /** this line is used by starport scaffolding # proto/tx/rpc */
+    RegisterCredentialStatus(request: MsgRegisterCredentialStatus): Promise<MsgRegisterCredentialStatusResponse>;
 }
 export declare class MsgClientImpl implements Msg {
     private readonly rpc;
@@ -107,6 +131,7 @@ export declare class MsgClientImpl implements Msg {
     UpdateDID(request: MsgUpdateDID): Promise<MsgUpdateDIDResponse>;
     CreateSchema(request: MsgCreateSchema): Promise<MsgCreateSchemaResponse>;
     DeactivateDID(request: MsgDeactivateDID): Promise<MsgDeactivateDIDResponse>;
+    RegisterCredentialStatus(request: MsgRegisterCredentialStatus): Promise<MsgRegisterCredentialStatusResponse>;
 }
 interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
