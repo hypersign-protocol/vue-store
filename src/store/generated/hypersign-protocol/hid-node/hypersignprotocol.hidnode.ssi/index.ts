@@ -9,17 +9,14 @@ import { Metadata } from "./module/types/ssi/v1/did"
 import { VerificationMethod } from "./module/types/ssi/v1/did"
 import { Service } from "./module/types/ssi/v1/did"
 import { SignInfo } from "./module/types/ssi/v1/did"
-import { DidDocument } from "./module/types/ssi/v1/did"
-import { Params } from "./module/types/ssi/v1/params"
-import { MarshalInput } from "./module/types/ssi/v1/query"
-import { MarshalOutput } from "./module/types/ssi/v1/query"
+import { DidDocumentState } from "./module/types/ssi/v1/did"
 import { SchemaDocument } from "./module/types/ssi/v1/schema"
 import { SchemaProperty } from "./module/types/ssi/v1/schema"
 import { SchemaProof } from "./module/types/ssi/v1/schema"
 import { Schema } from "./module/types/ssi/v1/schema"
 
 
-export { Claim, CredentialStatus, CredentialProof, Credential, Did, Metadata, VerificationMethod, Service, SignInfo, DidDocument, Params, MarshalInput, MarshalOutput, SchemaDocument, SchemaProperty, SchemaProof, Schema };
+export { Claim, CredentialStatus, CredentialProof, Credential, Did, Metadata, VerificationMethod, Service, SignInfo, DidDocumentState, SchemaDocument, SchemaProperty, SchemaProof, Schema };
 
 async function initTxClient(vuexGetters) {
 	return await txClient(vuexGetters['common/wallet/signer'], {
@@ -57,11 +54,10 @@ function getStructure(template) {
 
 const getDefaultState = () => {
 	return {
-				Params: {},
-				GetSchema: {},
-				SchemaParam: {},
-				ResolveDid: {},
-				DidParam: {},
+				QuerySchema: {},
+				QuerySchemas: {},
+				QueryDidDocument: {},
+				QueryDidDocuments: {},
 				QueryCredential: {},
 				QueryCredentials: {},
 				
@@ -75,10 +71,7 @@ const getDefaultState = () => {
 						VerificationMethod: getStructure(VerificationMethod.fromPartial({})),
 						Service: getStructure(Service.fromPartial({})),
 						SignInfo: getStructure(SignInfo.fromPartial({})),
-						DidDocument: getStructure(DidDocument.fromPartial({})),
-						Params: getStructure(Params.fromPartial({})),
-						MarshalInput: getStructure(MarshalInput.fromPartial({})),
-						MarshalOutput: getStructure(MarshalOutput.fromPartial({})),
+						DidDocumentState: getStructure(DidDocumentState.fromPartial({})),
 						SchemaDocument: getStructure(SchemaDocument.fromPartial({})),
 						SchemaProperty: getStructure(SchemaProperty.fromPartial({})),
 						SchemaProof: getStructure(SchemaProof.fromPartial({})),
@@ -111,35 +104,29 @@ export default {
 		}
 	},
 	getters: {
-				getParams: (state) => (params = { params: {}}) => {
+				getQuerySchema: (state) => (params = { params: {}}) => {
 					if (!(<any> params).query) {
 						(<any> params).query=null
 					}
-			return state.Params[JSON.stringify(params)] ?? {}
+			return state.QuerySchema[JSON.stringify(params)] ?? {}
 		},
-				getGetSchema: (state) => (params = { params: {}}) => {
+				getQuerySchemas: (state) => (params = { params: {}}) => {
 					if (!(<any> params).query) {
 						(<any> params).query=null
 					}
-			return state.GetSchema[JSON.stringify(params)] ?? {}
+			return state.QuerySchemas[JSON.stringify(params)] ?? {}
 		},
-				getSchemaParam: (state) => (params = { params: {}}) => {
+				getQueryDidDocument: (state) => (params = { params: {}}) => {
 					if (!(<any> params).query) {
 						(<any> params).query=null
 					}
-			return state.SchemaParam[JSON.stringify(params)] ?? {}
+			return state.QueryDidDocument[JSON.stringify(params)] ?? {}
 		},
-				getResolveDid: (state) => (params = { params: {}}) => {
+				getQueryDidDocuments: (state) => (params = { params: {}}) => {
 					if (!(<any> params).query) {
 						(<any> params).query=null
 					}
-			return state.ResolveDid[JSON.stringify(params)] ?? {}
-		},
-				getDidParam: (state) => (params = { params: {}}) => {
-					if (!(<any> params).query) {
-						(<any> params).query=null
-					}
-			return state.DidParam[JSON.stringify(params)] ?? {}
+			return state.QueryDidDocuments[JSON.stringify(params)] ?? {}
 		},
 				getQueryCredential: (state) => (params = { params: {}}) => {
 					if (!(<any> params).query) {
@@ -192,18 +179,18 @@ export default {
 		 		
 		
 		
-		async QueryParams({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+		async QueryQuerySchema({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
 			try {
 				const key = params ?? {};
 				const queryClient=await initQueryClient(rootGetters)
-				let value= (await queryClient.queryParams()).data
+				let value= (await queryClient.queryQuerySchema( key.schemaId)).data
 				
 					
-				commit('QUERY', { query: 'Params', key: { params: {...key}, query}, value })
-				if (subscribe) commit('SUBSCRIBE', { action: 'QueryParams', payload: { options: { all }, params: {...key},query }})
-				return getters['getParams']( { params: {...key}, query}) ?? {}
+				commit('QUERY', { query: 'QuerySchema', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryQuerySchema', payload: { options: { all }, params: {...key},query }})
+				return getters['getQuerySchema']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new Error('QueryClient:QueryParams API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QueryQuerySchema API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
@@ -214,44 +201,22 @@ export default {
 		 		
 		
 		
-		async QueryGetSchema({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+		async QueryQuerySchemas({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
 			try {
 				const key = params ?? {};
 				const queryClient=await initQueryClient(rootGetters)
-				let value= (await queryClient.queryGetSchema( key.schemaId)).data
-				
-					
-				commit('QUERY', { query: 'GetSchema', key: { params: {...key}, query}, value })
-				if (subscribe) commit('SUBSCRIBE', { action: 'QueryGetSchema', payload: { options: { all }, params: {...key},query }})
-				return getters['getGetSchema']( { params: {...key}, query}) ?? {}
-			} catch (e) {
-				throw new Error('QueryClient:QueryGetSchema API Node Unavailable. Could not perform query: ' + e.message)
-				
-			}
-		},
-		
-		
-		
-		
-		 		
-		
-		
-		async QuerySchemaParam({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
-			try {
-				const key = params ?? {};
-				const queryClient=await initQueryClient(rootGetters)
-				let value= (await queryClient.querySchemaParam(query)).data
+				let value= (await queryClient.queryQuerySchemas(query)).data
 				
 					
 				while (all && (<any> value).pagination && (<any> value).pagination.next_key!=null) {
-					let next_values=(await queryClient.querySchemaParam({...query, 'pagination.key':(<any> value).pagination.next_key})).data
+					let next_values=(await queryClient.queryQuerySchemas({...query, 'pagination.key':(<any> value).pagination.next_key})).data
 					value = mergeResults(value, next_values);
 				}
-				commit('QUERY', { query: 'SchemaParam', key: { params: {...key}, query}, value })
-				if (subscribe) commit('SUBSCRIBE', { action: 'QuerySchemaParam', payload: { options: { all }, params: {...key},query }})
-				return getters['getSchemaParam']( { params: {...key}, query}) ?? {}
+				commit('QUERY', { query: 'QuerySchemas', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryQuerySchemas', payload: { options: { all }, params: {...key},query }})
+				return getters['getQuerySchemas']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new Error('QueryClient:QuerySchemaParam API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QueryQuerySchemas API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
@@ -262,18 +227,18 @@ export default {
 		 		
 		
 		
-		async QueryResolveDid({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+		async QueryQueryDidDocument({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
 			try {
 				const key = params ?? {};
 				const queryClient=await initQueryClient(rootGetters)
-				let value= (await queryClient.queryResolveDid( key.didId)).data
+				let value= (await queryClient.queryQueryDidDocument( key.didId)).data
 				
 					
-				commit('QUERY', { query: 'ResolveDid', key: { params: {...key}, query}, value })
-				if (subscribe) commit('SUBSCRIBE', { action: 'QueryResolveDid', payload: { options: { all }, params: {...key},query }})
-				return getters['getResolveDid']( { params: {...key}, query}) ?? {}
+				commit('QUERY', { query: 'QueryDidDocument', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryQueryDidDocument', payload: { options: { all }, params: {...key},query }})
+				return getters['getQueryDidDocument']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new Error('QueryClient:QueryResolveDid API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QueryQueryDidDocument API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
@@ -284,22 +249,22 @@ export default {
 		 		
 		
 		
-		async QueryDidParam({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+		async QueryQueryDidDocuments({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
 			try {
 				const key = params ?? {};
 				const queryClient=await initQueryClient(rootGetters)
-				let value= (await queryClient.queryDidParam(query)).data
+				let value= (await queryClient.queryQueryDidDocuments(query)).data
 				
 					
 				while (all && (<any> value).pagination && (<any> value).pagination.next_key!=null) {
-					let next_values=(await queryClient.queryDidParam({...query, 'pagination.key':(<any> value).pagination.next_key})).data
+					let next_values=(await queryClient.queryQueryDidDocuments({...query, 'pagination.key':(<any> value).pagination.next_key})).data
 					value = mergeResults(value, next_values);
 				}
-				commit('QUERY', { query: 'DidParam', key: { params: {...key}, query}, value })
-				if (subscribe) commit('SUBSCRIBE', { action: 'QueryDidParam', payload: { options: { all }, params: {...key},query }})
-				return getters['getDidParam']( { params: {...key}, query}) ?? {}
+				commit('QUERY', { query: 'QueryDidDocuments', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryQueryDidDocuments', payload: { options: { all }, params: {...key},query }})
+				return getters['getQueryDidDocuments']( { params: {...key}, query}) ?? {}
 			} catch (e) {
-				throw new Error('QueryClient:QueryDidParam API Node Unavailable. Could not perform query: ' + e.message)
+				throw new Error('QueryClient:QueryQueryDidDocuments API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},
@@ -353,18 +318,18 @@ export default {
 		},
 		
 		
-		async sendMsgCreateDID({ rootGetters }, { value, fee = [], memo = '' }) {
+		async sendMsgUpdateDID({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgCreateDID(value)
+				const msg = await txClient.msgUpdateDID(value)
 				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
 	gas: "200000" }, memo})
 				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgCreateDID:Init Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgUpdateDID:Init Could not initialize signing client. Wallet is required.')
 				}else{
-					throw new Error('TxClient:MsgCreateDID:Send Could not broadcast Tx: '+ e.message)
+					throw new Error('TxClient:MsgUpdateDID:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
@@ -383,21 +348,6 @@ export default {
 				}
 			}
 		},
-		async sendMsgRegisterCredentialStatus({ rootGetters }, { value, fee = [], memo = '' }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgRegisterCredentialStatus(value)
-				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
-	gas: "200000" }, memo})
-				return result
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgRegisterCredentialStatus:Init Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new Error('TxClient:MsgRegisterCredentialStatus:Send Could not broadcast Tx: '+ e.message)
-				}
-			}
-		},
 		async sendMsgCreateSchema({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -413,32 +363,47 @@ export default {
 				}
 			}
 		},
-		async sendMsgUpdateDID({ rootGetters }, { value, fee = [], memo = '' }) {
+		async sendMsgCreateDID({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgUpdateDID(value)
+				const msg = await txClient.msgCreateDID(value)
 				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
 	gas: "200000" }, memo})
 				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgUpdateDID:Init Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgCreateDID:Init Could not initialize signing client. Wallet is required.')
 				}else{
-					throw new Error('TxClient:MsgUpdateDID:Send Could not broadcast Tx: '+ e.message)
+					throw new Error('TxClient:MsgCreateDID:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgRegisterCredentialStatus({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgRegisterCredentialStatus(value)
+				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
+	gas: "200000" }, memo})
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgRegisterCredentialStatus:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgRegisterCredentialStatus:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
 		
-		async MsgCreateDID({ rootGetters }, { value }) {
+		async MsgUpdateDID({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgCreateDID(value)
+				const msg = await txClient.msgUpdateDID(value)
 				return msg
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgCreateDID:Init Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgUpdateDID:Init Could not initialize signing client. Wallet is required.')
 				} else{
-					throw new Error('TxClient:MsgCreateDID:Create Could not create message: ' + e.message)
+					throw new Error('TxClient:MsgUpdateDID:Create Could not create message: ' + e.message)
 				}
 			}
 		},
@@ -455,19 +420,6 @@ export default {
 				}
 			}
 		},
-		async MsgRegisterCredentialStatus({ rootGetters }, { value }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgRegisterCredentialStatus(value)
-				return msg
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgRegisterCredentialStatus:Init Could not initialize signing client. Wallet is required.')
-				} else{
-					throw new Error('TxClient:MsgRegisterCredentialStatus:Create Could not create message: ' + e.message)
-				}
-			}
-		},
 		async MsgCreateSchema({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -481,16 +433,29 @@ export default {
 				}
 			}
 		},
-		async MsgUpdateDID({ rootGetters }, { value }) {
+		async MsgCreateDID({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgUpdateDID(value)
+				const msg = await txClient.msgCreateDID(value)
 				return msg
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgUpdateDID:Init Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgCreateDID:Init Could not initialize signing client. Wallet is required.')
 				} else{
-					throw new Error('TxClient:MsgUpdateDID:Create Could not create message: ' + e.message)
+					throw new Error('TxClient:MsgCreateDID:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgRegisterCredentialStatus({ rootGetters }, { value }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgRegisterCredentialStatus(value)
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgRegisterCredentialStatus:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgRegisterCredentialStatus:Create Could not create message: ' + e.message)
 				}
 			}
 		},

@@ -4,19 +4,19 @@ import { StdFee } from "@cosmjs/launchpad";
 import { SigningStargateClient } from "@cosmjs/stargate";
 import { Registry, OfflineSigner, EncodeObject, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
-import { MsgCreateDID } from "./types/ssi/v1/tx";
-import { MsgDeactivateDID } from "./types/ssi/v1/tx";
-import { MsgRegisterCredentialStatus } from "./types/ssi/v1/tx";
-import { MsgCreateSchema } from "./types/ssi/v1/tx";
 import { MsgUpdateDID } from "./types/ssi/v1/tx";
+import { MsgDeactivateDID } from "./types/ssi/v1/tx";
+import { MsgCreateSchema } from "./types/ssi/v1/tx";
+import { MsgCreateDID } from "./types/ssi/v1/tx";
+import { MsgRegisterCredentialStatus } from "./types/ssi/v1/tx";
 
 
 const types = [
-  ["/hypersignprotocol.hidnode.ssi.MsgCreateDID", MsgCreateDID],
-  ["/hypersignprotocol.hidnode.ssi.MsgDeactivateDID", MsgDeactivateDID],
-  ["/hypersignprotocol.hidnode.ssi.MsgRegisterCredentialStatus", MsgRegisterCredentialStatus],
-  ["/hypersignprotocol.hidnode.ssi.MsgCreateSchema", MsgCreateSchema],
   ["/hypersignprotocol.hidnode.ssi.MsgUpdateDID", MsgUpdateDID],
+  ["/hypersignprotocol.hidnode.ssi.MsgDeactivateDID", MsgDeactivateDID],
+  ["/hypersignprotocol.hidnode.ssi.MsgCreateSchema", MsgCreateSchema],
+  ["/hypersignprotocol.hidnode.ssi.MsgCreateDID", MsgCreateDID],
+  ["/hypersignprotocol.hidnode.ssi.MsgRegisterCredentialStatus", MsgRegisterCredentialStatus],
   
 ];
 export const MissingWalletError = new Error("wallet is required");
@@ -49,11 +49,11 @@ const txClient = async (wallet: OfflineSigner, { addr: addr }: TxClientOptions =
 
   return {
     signAndBroadcast: (msgs: EncodeObject[], { fee, memo }: SignAndBroadcastOptions = {fee: defaultFee, memo: ""}) => client.signAndBroadcast(address, msgs, fee,memo),
-    msgCreateDID: (data: MsgCreateDID): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgCreateDID", value: MsgCreateDID.fromPartial( data ) }),
-    msgDeactivateDID: (data: MsgDeactivateDID): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgDeactivateDID", value: MsgDeactivateDID.fromPartial( data ) }),
-    msgRegisterCredentialStatus: (data: MsgRegisterCredentialStatus): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgRegisterCredentialStatus", value: MsgRegisterCredentialStatus.fromPartial( data ) }),
-    msgCreateSchema: (data: MsgCreateSchema): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgCreateSchema", value: MsgCreateSchema.fromPartial( data ) }),
     msgUpdateDID: (data: MsgUpdateDID): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgUpdateDID", value: MsgUpdateDID.fromPartial( data ) }),
+    msgDeactivateDID: (data: MsgDeactivateDID): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgDeactivateDID", value: MsgDeactivateDID.fromPartial( data ) }),
+    msgCreateSchema: (data: MsgCreateSchema): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgCreateSchema", value: MsgCreateSchema.fromPartial( data ) }),
+    msgCreateDID: (data: MsgCreateDID): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgCreateDID", value: MsgCreateDID.fromPartial( data ) }),
+    msgRegisterCredentialStatus: (data: MsgRegisterCredentialStatus): EncodeObject => ({ typeUrl: "/hypersignprotocol.hidnode.ssi.MsgRegisterCredentialStatus", value: MsgRegisterCredentialStatus.fromPartial( data ) }),
     
   };
 };

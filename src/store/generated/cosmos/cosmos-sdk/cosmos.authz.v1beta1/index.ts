@@ -2,12 +2,12 @@ import { txClient, queryClient, MissingWalletError , registry} from './module'
 
 import { GenericAuthorization } from "./module/types/cosmos/authz/v1beta1/authz"
 import { Grant } from "./module/types/cosmos/authz/v1beta1/authz"
+import { GrantAuthorization } from "./module/types/cosmos/authz/v1beta1/authz"
 import { EventGrant } from "./module/types/cosmos/authz/v1beta1/event"
 import { EventRevoke } from "./module/types/cosmos/authz/v1beta1/event"
-import { GrantAuthorization } from "./module/types/cosmos/authz/v1beta1/genesis"
 
 
-export { GenericAuthorization, Grant, EventGrant, EventRevoke, GrantAuthorization };
+export { GenericAuthorization, Grant, GrantAuthorization, EventGrant, EventRevoke };
 
 async function initTxClient(vuexGetters) {
 	return await txClient(vuexGetters['common/wallet/signer'], {
@@ -46,13 +46,15 @@ function getStructure(template) {
 const getDefaultState = () => {
 	return {
 				Grants: {},
+				GranterGrants: {},
+				GranteeGrants: {},
 				
 				_Structure: {
 						GenericAuthorization: getStructure(GenericAuthorization.fromPartial({})),
 						Grant: getStructure(Grant.fromPartial({})),
+						GrantAuthorization: getStructure(GrantAuthorization.fromPartial({})),
 						EventGrant: getStructure(EventGrant.fromPartial({})),
 						EventRevoke: getStructure(EventRevoke.fromPartial({})),
-						GrantAuthorization: getStructure(GrantAuthorization.fromPartial({})),
 						
 		},
 		_Registry: registry,
@@ -86,6 +88,18 @@ export default {
 						(<any> params).query=null
 					}
 			return state.Grants[JSON.stringify(params)] ?? {}
+		},
+				getGranterGrants: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.GranterGrants[JSON.stringify(params)] ?? {}
+		},
+				getGranteeGrants: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.GranteeGrants[JSON.stringify(params)] ?? {}
 		},
 				
 		getTypeStructure: (state) => (type) => {
@@ -142,6 +156,58 @@ export default {
 				return getters['getGrants']( { params: {...key}, query}) ?? {}
 			} catch (e) {
 				throw new Error('QueryClient:QueryGrants API Node Unavailable. Could not perform query: ' + e.message)
+				
+			}
+		},
+		
+		
+		
+		
+		 		
+		
+		
+		async QueryGranterGrants({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+			try {
+				const key = params ?? {};
+				const queryClient=await initQueryClient(rootGetters)
+				let value= (await queryClient.queryGranterGrants( key.granter, query)).data
+				
+					
+				while (all && (<any> value).pagination && (<any> value).pagination.next_key!=null) {
+					let next_values=(await queryClient.queryGranterGrants( key.granter, {...query, 'pagination.key':(<any> value).pagination.next_key})).data
+					value = mergeResults(value, next_values);
+				}
+				commit('QUERY', { query: 'GranterGrants', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryGranterGrants', payload: { options: { all }, params: {...key},query }})
+				return getters['getGranterGrants']( { params: {...key}, query}) ?? {}
+			} catch (e) {
+				throw new Error('QueryClient:QueryGranterGrants API Node Unavailable. Could not perform query: ' + e.message)
+				
+			}
+		},
+		
+		
+		
+		
+		 		
+		
+		
+		async QueryGranteeGrants({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+			try {
+				const key = params ?? {};
+				const queryClient=await initQueryClient(rootGetters)
+				let value= (await queryClient.queryGranteeGrants( key.grantee, query)).data
+				
+					
+				while (all && (<any> value).pagination && (<any> value).pagination.next_key!=null) {
+					let next_values=(await queryClient.queryGranteeGrants( key.grantee, {...query, 'pagination.key':(<any> value).pagination.next_key})).data
+					value = mergeResults(value, next_values);
+				}
+				commit('QUERY', { query: 'GranteeGrants', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryGranteeGrants', payload: { options: { all }, params: {...key},query }})
+				return getters['getGranteeGrants']( { params: {...key}, query}) ?? {}
+			} catch (e) {
+				throw new Error('QueryClient:QueryGranteeGrants API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},

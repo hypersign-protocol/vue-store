@@ -190,6 +190,15 @@ export interface V1Height {
 export type V1MsgTransferResponse = object;
 
 /**
+* QueryDenomHashResponse is the response type for the Query/DenomHash RPC
+method.
+*/
+export interface V1QueryDenomHashResponse {
+  /** hash (in hex format) of the denomination trace information. */
+  hash?: string;
+}
+
+/**
 * QueryDenomTraceResponse is the response type for the Query/DenomTrace RPC
 method.
 */
@@ -208,6 +217,13 @@ export interface V1QueryDenomTracesResponse {
 
   /** pagination defines the pagination in the response. */
   pagination?: V1Beta1PageResponse;
+}
+
+/**
+ * QueryEscrowAddressResponse is the response type of the EscrowAddress RPC method.
+ */
+export interface V1QueryEscrowAddressResponse {
+  escrow_address?: string;
 }
 
 /**
@@ -481,6 +497,38 @@ export class HttpClient<SecurityDataType = unknown> {
  * @version version not set
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryEscrowAddress
+   * @summary EscrowAddress returns the escrow address for a particular port and channel id.
+   * @request GET:/ibc/apps/transfer/v1/channels/{channel_id}/ports/{port_id}/escrow_address
+   */
+  queryEscrowAddress = (channel_id: string, port_id: string, params: RequestParams = {}) =>
+    this.request<V1QueryEscrowAddressResponse, RpcStatus>({
+      path: `/ibc/apps/transfer/v1/channels/${channel_id}/ports/${port_id}/escrow_address`,
+      method: "GET",
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryDenomHash
+   * @summary DenomHash queries a denomination hash information.
+   * @request GET:/ibc/apps/transfer/v1/denom_hashes/{trace}
+   */
+  queryDenomHash = (trace: string, params: RequestParams = {}) =>
+    this.request<V1QueryDenomHashResponse, RpcStatus>({
+      path: `/ibc/apps/transfer/v1/denom_hashes/${trace}`,
+      method: "GET",
+      format: "json",
+      ...params,
+    });
+
   /**
    * No description
    *

@@ -66,11 +66,6 @@ export interface SsiDid {
   service?: SsiService[];
 }
 
-export interface SsiDidResolutionResponse {
-  didDocument?: SsiDid;
-  didDocumentMetadata?: SsiMetadata;
-}
-
 export interface SsiMetadata {
   created?: string;
   updated?: string;
@@ -102,11 +97,6 @@ export interface SsiMsgUpdateDIDResponse {
   updateId?: string;
 }
 
-/**
- * Params defines the parameters for the module.
- */
-export type SsiParams = object;
-
 export interface SsiQueryCredentialResponse {
   credStatus?: SsiCredential;
 }
@@ -117,25 +107,22 @@ export interface SsiQueryCredentialsResponse {
   credentials?: SsiCredential[];
 }
 
-export interface SsiQueryDidParamResponse {
-  /** @format uint64 */
-  totalDidCount?: string;
-  didDocList?: SsiDidResolutionResponse[];
+export interface SsiQueryDidDocumentResponse {
+  didDocument?: SsiDid;
+  didDocumentMetadata?: SsiMetadata;
 }
 
-export interface SsiQueryGetSchemaResponse {
+export interface SsiQueryDidDocumentsResponse {
+  /** @format uint64 */
+  totalDidCount?: string;
+  didDocList?: SsiQueryDidDocumentResponse[];
+}
+
+export interface SsiQuerySchemaResponse {
   schema?: SsiSchema[];
 }
 
-/**
- * QueryParamsResponse is response type for the Query/Params RPC method.
- */
-export interface SsiQueryParamsResponse {
-  /** params holds all the parameters of this module. */
-  params?: SsiParams;
-}
-
-export interface SsiQuerySchemaParamResponse {
+export interface SsiQuerySchemasResponse {
   /** @format uint64 */
   totalCount?: string;
   schemaList?: SsiSchema[];
@@ -470,7 +457,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    *
    * @tags Query
    * @name QueryQueryCredential
-   * @summary Get the Credential Status for a given credential Id
+   * @summary Get the Credential Status for a given credential id
    * @request GET:/hypersign-protocol/hidnode/ssi/credential/{credId}
    */
   queryQueryCredential = (credId: string, params: RequestParams = {}) =>
@@ -485,11 +472,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    * No description
    *
    * @tags Query
-   * @name QueryDidParam
-   * @summary Get the list of registered Did Documents and count
+   * @name QueryQueryDidDocuments
+   * @summary Get the count and list of registered Did Documents
    * @request GET:/hypersign-protocol/hidnode/ssi/did
    */
-  queryDidParam = (
+  queryQueryDidDocuments = (
     query?: {
       count?: boolean;
       "pagination.key"?: string;
@@ -500,7 +487,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     },
     params: RequestParams = {},
   ) =>
-    this.request<SsiQueryDidParamResponse, RpcStatus>({
+    this.request<SsiQueryDidDocumentsResponse, RpcStatus>({
       path: `/hypersign-protocol/hidnode/ssi/did`,
       method: "GET",
       query: query,
@@ -512,12 +499,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    * No description
    *
    * @tags Query
-   * @name QueryResolveDid
-   * @summary Get the Did Document for a specified Did Id
+   * @name QueryQueryDidDocument
+   * @summary Get the Did Document for a specified DID id
    * @request GET:/hypersign-protocol/hidnode/ssi/did/{didId}
    */
-  queryResolveDid = (didId: string, params: RequestParams = {}) =>
-    this.request<SsiDidResolutionResponse, RpcStatus>({
+  queryQueryDidDocument = (didId: string, params: RequestParams = {}) =>
+    this.request<SsiQueryDidDocumentResponse, RpcStatus>({
       path: `/hypersign-protocol/hidnode/ssi/did/${didId}`,
       method: "GET",
       format: "json",
@@ -528,11 +515,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    * No description
    *
    * @tags Query
-   * @name QuerySchemaParam
-   * @summary Get the list of Schemas and count
+   * @name QueryQuerySchemas
+   * @summary Get the count and list of registered Schemas
    * @request GET:/hypersign-protocol/hidnode/ssi/schema
    */
-  querySchemaParam = (
+  queryQuerySchemas = (
     query?: {
       "pagination.key"?: string;
       "pagination.offset"?: string;
@@ -542,7 +529,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     },
     params: RequestParams = {},
   ) =>
-    this.request<SsiQuerySchemaParamResponse, RpcStatus>({
+    this.request<SsiQuerySchemasResponse, RpcStatus>({
       path: `/hypersign-protocol/hidnode/ssi/schema`,
       method: "GET",
       query: query,
@@ -554,29 +541,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    * No description
    *
    * @tags Query
-   * @name QueryGetSchema
-   * @summary Get the Schema for a specified Schema Id
+   * @name QueryQuerySchema
+   * @summary Get the Schema Document for a specified schema id
    * @request GET:/hypersign-protocol/hidnode/ssi/schema/{schemaId}
    */
-  queryGetSchema = (schemaId: string, params: RequestParams = {}) =>
-    this.request<SsiQueryGetSchemaResponse, RpcStatus>({
+  queryQuerySchema = (schemaId: string, params: RequestParams = {}) =>
+    this.request<SsiQuerySchemaResponse, RpcStatus>({
       path: `/hypersign-protocol/hidnode/ssi/schema/${schemaId}`,
-      method: "GET",
-      format: "json",
-      ...params,
-    });
-
-  /**
-   * No description
-   *
-   * @tags Query
-   * @name QueryParams
-   * @summary Parameters queries the parameters of the module.
-   * @request GET:/hypersignprotocol/hidnode/ssi/params
-   */
-  queryParams = (params: RequestParams = {}) =>
-    this.request<SsiQueryParamsResponse, RpcStatus>({
-      path: `/hypersignprotocol/hidnode/ssi/params`,
       method: "GET",
       format: "json",
       ...params,
