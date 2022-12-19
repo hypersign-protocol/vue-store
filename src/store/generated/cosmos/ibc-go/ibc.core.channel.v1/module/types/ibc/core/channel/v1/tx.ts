@@ -6,6 +6,48 @@ import { Height } from "../../../../ibc/core/client/v1/client";
 
 export const protobufPackage = "ibc.core.channel.v1";
 
+/** ResponseResultType defines the possible outcomes of the execution of a message */
+export enum ResponseResultType {
+  /** RESPONSE_RESULT_TYPE_UNSPECIFIED - Default zero value enumeration */
+  RESPONSE_RESULT_TYPE_UNSPECIFIED = 0,
+  /** RESPONSE_RESULT_TYPE_NOOP - The message did not call the IBC application callbacks (because, for example, the packet had already been relayed) */
+  RESPONSE_RESULT_TYPE_NOOP = 1,
+  /** RESPONSE_RESULT_TYPE_SUCCESS - The message was executed successfully */
+  RESPONSE_RESULT_TYPE_SUCCESS = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function responseResultTypeFromJSON(object: any): ResponseResultType {
+  switch (object) {
+    case 0:
+    case "RESPONSE_RESULT_TYPE_UNSPECIFIED":
+      return ResponseResultType.RESPONSE_RESULT_TYPE_UNSPECIFIED;
+    case 1:
+    case "RESPONSE_RESULT_TYPE_NOOP":
+      return ResponseResultType.RESPONSE_RESULT_TYPE_NOOP;
+    case 2:
+    case "RESPONSE_RESULT_TYPE_SUCCESS":
+      return ResponseResultType.RESPONSE_RESULT_TYPE_SUCCESS;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return ResponseResultType.UNRECOGNIZED;
+  }
+}
+
+export function responseResultTypeToJSON(object: ResponseResultType): string {
+  switch (object) {
+    case ResponseResultType.RESPONSE_RESULT_TYPE_UNSPECIFIED:
+      return "RESPONSE_RESULT_TYPE_UNSPECIFIED";
+    case ResponseResultType.RESPONSE_RESULT_TYPE_NOOP:
+      return "RESPONSE_RESULT_TYPE_NOOP";
+    case ResponseResultType.RESPONSE_RESULT_TYPE_SUCCESS:
+      return "RESPONSE_RESULT_TYPE_SUCCESS";
+    default:
+      return "UNKNOWN";
+  }
+}
+
 /**
  * MsgChannelOpenInit defines an sdk.Msg to initialize a channel handshake. It
  * is called by a relayer on Chain A.
@@ -17,11 +59,15 @@ export interface MsgChannelOpenInit {
 }
 
 /** MsgChannelOpenInitResponse defines the Msg/ChannelOpenInit response type. */
-export interface MsgChannelOpenInitResponse {}
+export interface MsgChannelOpenInitResponse {
+  channel_id: string;
+  version: string;
+}
 
 /**
  * MsgChannelOpenInit defines a msg sent by a Relayer to try to open a channel
- * on Chain B.
+ * on Chain B. The version field within the Channel field has been deprecated. Its
+ * value will be ignored by core IBC.
  */
 export interface MsgChannelOpenTry {
   port_id: string;
@@ -30,6 +76,7 @@ export interface MsgChannelOpenTry {
    * the channel identifier of the previous channel in state INIT
    */
   previous_channel_id: string;
+  /** NOTE: the version field within the channel has been deprecated. Its value will be ignored by core IBC. */
   channel: Channel | undefined;
   counterparty_version: string;
   proof_init: Uint8Array;
@@ -38,7 +85,9 @@ export interface MsgChannelOpenTry {
 }
 
 /** MsgChannelOpenTryResponse defines the Msg/ChannelOpenTry response type. */
-export interface MsgChannelOpenTryResponse {}
+export interface MsgChannelOpenTryResponse {
+  version: string;
+}
 
 /**
  * MsgChannelOpenAck defines a msg sent by a Relayer to Chain A to acknowledge
@@ -115,7 +164,9 @@ export interface MsgRecvPacket {
 }
 
 /** MsgRecvPacketResponse defines the Msg/RecvPacket response type. */
-export interface MsgRecvPacketResponse {}
+export interface MsgRecvPacketResponse {
+  result: ResponseResultType;
+}
 
 /** MsgTimeout receives timed-out packet */
 export interface MsgTimeout {
@@ -127,7 +178,9 @@ export interface MsgTimeout {
 }
 
 /** MsgTimeoutResponse defines the Msg/Timeout response type. */
-export interface MsgTimeoutResponse {}
+export interface MsgTimeoutResponse {
+  result: ResponseResultType;
+}
 
 /** MsgTimeoutOnClose timed-out packet upon counterparty channel closure. */
 export interface MsgTimeoutOnClose {
@@ -140,7 +193,9 @@ export interface MsgTimeoutOnClose {
 }
 
 /** MsgTimeoutOnCloseResponse defines the Msg/TimeoutOnClose response type. */
-export interface MsgTimeoutOnCloseResponse {}
+export interface MsgTimeoutOnCloseResponse {
+  result: ResponseResultType;
+}
 
 /** MsgAcknowledgement receives incoming IBC acknowledgement */
 export interface MsgAcknowledgement {
@@ -152,7 +207,9 @@ export interface MsgAcknowledgement {
 }
 
 /** MsgAcknowledgementResponse defines the Msg/Acknowledgement response type. */
-export interface MsgAcknowledgementResponse {}
+export interface MsgAcknowledgementResponse {
+  result: ResponseResultType;
+}
 
 const baseMsgChannelOpenInit: object = { port_id: "", signer: "" };
 
@@ -249,13 +306,19 @@ export const MsgChannelOpenInit = {
   },
 };
 
-const baseMsgChannelOpenInitResponse: object = {};
+const baseMsgChannelOpenInitResponse: object = { channel_id: "", version: "" };
 
 export const MsgChannelOpenInitResponse = {
   encode(
-    _: MsgChannelOpenInitResponse,
+    message: MsgChannelOpenInitResponse,
     writer: Writer = Writer.create()
   ): Writer {
+    if (message.channel_id !== "") {
+      writer.uint32(10).string(message.channel_id);
+    }
+    if (message.version !== "") {
+      writer.uint32(18).string(message.version);
+    }
     return writer;
   },
 
@@ -271,6 +334,12 @@ export const MsgChannelOpenInitResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1:
+          message.channel_id = reader.string();
+          break;
+        case 2:
+          message.version = reader.string();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -279,24 +348,46 @@ export const MsgChannelOpenInitResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgChannelOpenInitResponse {
+  fromJSON(object: any): MsgChannelOpenInitResponse {
     const message = {
       ...baseMsgChannelOpenInitResponse,
     } as MsgChannelOpenInitResponse;
+    if (object.channel_id !== undefined && object.channel_id !== null) {
+      message.channel_id = String(object.channel_id);
+    } else {
+      message.channel_id = "";
+    }
+    if (object.version !== undefined && object.version !== null) {
+      message.version = String(object.version);
+    } else {
+      message.version = "";
+    }
     return message;
   },
 
-  toJSON(_: MsgChannelOpenInitResponse): unknown {
+  toJSON(message: MsgChannelOpenInitResponse): unknown {
     const obj: any = {};
+    message.channel_id !== undefined && (obj.channel_id = message.channel_id);
+    message.version !== undefined && (obj.version = message.version);
     return obj;
   },
 
   fromPartial(
-    _: DeepPartial<MsgChannelOpenInitResponse>
+    object: DeepPartial<MsgChannelOpenInitResponse>
   ): MsgChannelOpenInitResponse {
     const message = {
       ...baseMsgChannelOpenInitResponse,
     } as MsgChannelOpenInitResponse;
+    if (object.channel_id !== undefined && object.channel_id !== null) {
+      message.channel_id = object.channel_id;
+    } else {
+      message.channel_id = "";
+    }
+    if (object.version !== undefined && object.version !== null) {
+      message.version = object.version;
+    } else {
+      message.version = "";
+    }
     return message;
   },
 };
@@ -484,13 +575,16 @@ export const MsgChannelOpenTry = {
   },
 };
 
-const baseMsgChannelOpenTryResponse: object = {};
+const baseMsgChannelOpenTryResponse: object = { version: "" };
 
 export const MsgChannelOpenTryResponse = {
   encode(
-    _: MsgChannelOpenTryResponse,
+    message: MsgChannelOpenTryResponse,
     writer: Writer = Writer.create()
   ): Writer {
+    if (message.version !== "") {
+      writer.uint32(10).string(message.version);
+    }
     return writer;
   },
 
@@ -506,6 +600,9 @@ export const MsgChannelOpenTryResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1:
+          message.version = reader.string();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -514,24 +611,35 @@ export const MsgChannelOpenTryResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgChannelOpenTryResponse {
+  fromJSON(object: any): MsgChannelOpenTryResponse {
     const message = {
       ...baseMsgChannelOpenTryResponse,
     } as MsgChannelOpenTryResponse;
+    if (object.version !== undefined && object.version !== null) {
+      message.version = String(object.version);
+    } else {
+      message.version = "";
+    }
     return message;
   },
 
-  toJSON(_: MsgChannelOpenTryResponse): unknown {
+  toJSON(message: MsgChannelOpenTryResponse): unknown {
     const obj: any = {};
+    message.version !== undefined && (obj.version = message.version);
     return obj;
   },
 
   fromPartial(
-    _: DeepPartial<MsgChannelOpenTryResponse>
+    object: DeepPartial<MsgChannelOpenTryResponse>
   ): MsgChannelOpenTryResponse {
     const message = {
       ...baseMsgChannelOpenTryResponse,
     } as MsgChannelOpenTryResponse;
+    if (object.version !== undefined && object.version !== null) {
+      message.version = object.version;
+    } else {
+      message.version = "";
+    }
     return message;
   },
 };
@@ -1412,10 +1520,16 @@ export const MsgRecvPacket = {
   },
 };
 
-const baseMsgRecvPacketResponse: object = {};
+const baseMsgRecvPacketResponse: object = { result: 0 };
 
 export const MsgRecvPacketResponse = {
-  encode(_: MsgRecvPacketResponse, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: MsgRecvPacketResponse,
+    writer: Writer = Writer.create()
+  ): Writer {
+    if (message.result !== 0) {
+      writer.uint32(8).int32(message.result);
+    }
     return writer;
   },
 
@@ -1426,6 +1540,9 @@ export const MsgRecvPacketResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1:
+          message.result = reader.int32() as any;
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -1434,18 +1551,32 @@ export const MsgRecvPacketResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgRecvPacketResponse {
+  fromJSON(object: any): MsgRecvPacketResponse {
     const message = { ...baseMsgRecvPacketResponse } as MsgRecvPacketResponse;
+    if (object.result !== undefined && object.result !== null) {
+      message.result = responseResultTypeFromJSON(object.result);
+    } else {
+      message.result = 0;
+    }
     return message;
   },
 
-  toJSON(_: MsgRecvPacketResponse): unknown {
+  toJSON(message: MsgRecvPacketResponse): unknown {
     const obj: any = {};
+    message.result !== undefined &&
+      (obj.result = responseResultTypeToJSON(message.result));
     return obj;
   },
 
-  fromPartial(_: DeepPartial<MsgRecvPacketResponse>): MsgRecvPacketResponse {
+  fromPartial(
+    object: DeepPartial<MsgRecvPacketResponse>
+  ): MsgRecvPacketResponse {
     const message = { ...baseMsgRecvPacketResponse } as MsgRecvPacketResponse;
+    if (object.result !== undefined && object.result !== null) {
+      message.result = object.result;
+    } else {
+      message.result = 0;
+    }
     return message;
   },
 };
@@ -1593,10 +1724,16 @@ export const MsgTimeout = {
   },
 };
 
-const baseMsgTimeoutResponse: object = {};
+const baseMsgTimeoutResponse: object = { result: 0 };
 
 export const MsgTimeoutResponse = {
-  encode(_: MsgTimeoutResponse, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: MsgTimeoutResponse,
+    writer: Writer = Writer.create()
+  ): Writer {
+    if (message.result !== 0) {
+      writer.uint32(8).int32(message.result);
+    }
     return writer;
   },
 
@@ -1607,6 +1744,9 @@ export const MsgTimeoutResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1:
+          message.result = reader.int32() as any;
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -1615,18 +1755,30 @@ export const MsgTimeoutResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgTimeoutResponse {
+  fromJSON(object: any): MsgTimeoutResponse {
     const message = { ...baseMsgTimeoutResponse } as MsgTimeoutResponse;
+    if (object.result !== undefined && object.result !== null) {
+      message.result = responseResultTypeFromJSON(object.result);
+    } else {
+      message.result = 0;
+    }
     return message;
   },
 
-  toJSON(_: MsgTimeoutResponse): unknown {
+  toJSON(message: MsgTimeoutResponse): unknown {
     const obj: any = {};
+    message.result !== undefined &&
+      (obj.result = responseResultTypeToJSON(message.result));
     return obj;
   },
 
-  fromPartial(_: DeepPartial<MsgTimeoutResponse>): MsgTimeoutResponse {
+  fromPartial(object: DeepPartial<MsgTimeoutResponse>): MsgTimeoutResponse {
     const message = { ...baseMsgTimeoutResponse } as MsgTimeoutResponse;
+    if (object.result !== undefined && object.result !== null) {
+      message.result = object.result;
+    } else {
+      message.result = 0;
+    }
     return message;
   },
 };
@@ -1794,13 +1946,16 @@ export const MsgTimeoutOnClose = {
   },
 };
 
-const baseMsgTimeoutOnCloseResponse: object = {};
+const baseMsgTimeoutOnCloseResponse: object = { result: 0 };
 
 export const MsgTimeoutOnCloseResponse = {
   encode(
-    _: MsgTimeoutOnCloseResponse,
+    message: MsgTimeoutOnCloseResponse,
     writer: Writer = Writer.create()
   ): Writer {
+    if (message.result !== 0) {
+      writer.uint32(8).int32(message.result);
+    }
     return writer;
   },
 
@@ -1816,6 +1971,9 @@ export const MsgTimeoutOnCloseResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1:
+          message.result = reader.int32() as any;
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -1824,24 +1982,36 @@ export const MsgTimeoutOnCloseResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgTimeoutOnCloseResponse {
+  fromJSON(object: any): MsgTimeoutOnCloseResponse {
     const message = {
       ...baseMsgTimeoutOnCloseResponse,
     } as MsgTimeoutOnCloseResponse;
+    if (object.result !== undefined && object.result !== null) {
+      message.result = responseResultTypeFromJSON(object.result);
+    } else {
+      message.result = 0;
+    }
     return message;
   },
 
-  toJSON(_: MsgTimeoutOnCloseResponse): unknown {
+  toJSON(message: MsgTimeoutOnCloseResponse): unknown {
     const obj: any = {};
+    message.result !== undefined &&
+      (obj.result = responseResultTypeToJSON(message.result));
     return obj;
   },
 
   fromPartial(
-    _: DeepPartial<MsgTimeoutOnCloseResponse>
+    object: DeepPartial<MsgTimeoutOnCloseResponse>
   ): MsgTimeoutOnCloseResponse {
     const message = {
       ...baseMsgTimeoutOnCloseResponse,
     } as MsgTimeoutOnCloseResponse;
+    if (object.result !== undefined && object.result !== null) {
+      message.result = object.result;
+    } else {
+      message.result = 0;
+    }
     return message;
   },
 };
@@ -1988,13 +2158,16 @@ export const MsgAcknowledgement = {
   },
 };
 
-const baseMsgAcknowledgementResponse: object = {};
+const baseMsgAcknowledgementResponse: object = { result: 0 };
 
 export const MsgAcknowledgementResponse = {
   encode(
-    _: MsgAcknowledgementResponse,
+    message: MsgAcknowledgementResponse,
     writer: Writer = Writer.create()
   ): Writer {
+    if (message.result !== 0) {
+      writer.uint32(8).int32(message.result);
+    }
     return writer;
   },
 
@@ -2010,6 +2183,9 @@ export const MsgAcknowledgementResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1:
+          message.result = reader.int32() as any;
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -2018,24 +2194,36 @@ export const MsgAcknowledgementResponse = {
     return message;
   },
 
-  fromJSON(_: any): MsgAcknowledgementResponse {
+  fromJSON(object: any): MsgAcknowledgementResponse {
     const message = {
       ...baseMsgAcknowledgementResponse,
     } as MsgAcknowledgementResponse;
+    if (object.result !== undefined && object.result !== null) {
+      message.result = responseResultTypeFromJSON(object.result);
+    } else {
+      message.result = 0;
+    }
     return message;
   },
 
-  toJSON(_: MsgAcknowledgementResponse): unknown {
+  toJSON(message: MsgAcknowledgementResponse): unknown {
     const obj: any = {};
+    message.result !== undefined &&
+      (obj.result = responseResultTypeToJSON(message.result));
     return obj;
   },
 
   fromPartial(
-    _: DeepPartial<MsgAcknowledgementResponse>
+    object: DeepPartial<MsgAcknowledgementResponse>
   ): MsgAcknowledgementResponse {
     const message = {
       ...baseMsgAcknowledgementResponse,
     } as MsgAcknowledgementResponse;
+    if (object.result !== undefined && object.result !== null) {
+      message.result = object.result;
+    } else {
+      message.result = 0;
+    }
     return message;
   },
 };

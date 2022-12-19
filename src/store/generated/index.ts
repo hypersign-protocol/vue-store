@@ -16,6 +16,8 @@ import CosmosCosmosSdkCosmosStakingV1Beta1 from './cosmos/cosmos-sdk/cosmos.stak
 import CosmosCosmosSdkCosmosTxV1Beta1 from './cosmos/cosmos-sdk/cosmos.tx.v1beta1'
 import CosmosCosmosSdkCosmosUpgradeV1Beta1 from './cosmos/cosmos-sdk/cosmos.upgrade.v1beta1'
 import CosmosCosmosSdkCosmosVestingV1Beta1 from './cosmos/cosmos-sdk/cosmos.vesting.v1beta1'
+import CosmosIbcGoIbcApplicationsInterchainAccountsControllerV1 from './cosmos/ibc-go/ibc.applications.interchain_accounts.controller.v1'
+import CosmosIbcGoIbcApplicationsInterchainAccountsHostV1 from './cosmos/ibc-go/ibc.applications.interchain_accounts.host.v1'
 import CosmosIbcGoIbcApplicationsTransferV1 from './cosmos/ibc-go/ibc.applications.transfer.v1'
 import CosmosIbcGoIbcCoreChannelV1 from './cosmos/ibc-go/ibc.core.channel.v1'
 import CosmosIbcGoIbcCoreClientV1 from './cosmos/ibc-go/ibc.core.client.v1'
@@ -40,6 +42,8 @@ export default {
   CosmosCosmosSdkCosmosTxV1Beta1: load(CosmosCosmosSdkCosmosTxV1Beta1, 'cosmos.tx.v1beta1'),
   CosmosCosmosSdkCosmosUpgradeV1Beta1: load(CosmosCosmosSdkCosmosUpgradeV1Beta1, 'cosmos.upgrade.v1beta1'),
   CosmosCosmosSdkCosmosVestingV1Beta1: load(CosmosCosmosSdkCosmosVestingV1Beta1, 'cosmos.vesting.v1beta1'),
+  CosmosIbcGoIbcApplicationsInterchainAccountsControllerV1: load(CosmosIbcGoIbcApplicationsInterchainAccountsControllerV1, 'ibc.applications.interchain_accounts.controller.v1'),
+  CosmosIbcGoIbcApplicationsInterchainAccountsHostV1: load(CosmosIbcGoIbcApplicationsInterchainAccountsHostV1, 'ibc.applications.interchain_accounts.host.v1'),
   CosmosIbcGoIbcApplicationsTransferV1: load(CosmosIbcGoIbcApplicationsTransferV1, 'ibc.applications.transfer.v1'),
   CosmosIbcGoIbcCoreChannelV1: load(CosmosIbcGoIbcCoreChannelV1, 'ibc.core.channel.v1'),
   CosmosIbcGoIbcCoreClientV1: load(CosmosIbcGoIbcCoreClientV1, 'ibc.core.client.v1'),

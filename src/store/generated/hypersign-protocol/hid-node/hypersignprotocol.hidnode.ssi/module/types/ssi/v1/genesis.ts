@@ -5,20 +5,15 @@ export const protobufPackage = "hypersignprotocol.hidnode.ssi";
 
 /** GenesisState defines the ssi module's genesis state. */
 export interface GenesisState {
-  /** TODO: Once did method spec has been confirmed, did_method should be removed */
-  did_method: string;
-  did_namespace: string;
+  chain_namespace: string;
 }
 
-const baseGenesisState: object = { did_method: "", did_namespace: "" };
+const baseGenesisState: object = { chain_namespace: "" };
 
 export const GenesisState = {
   encode(message: GenesisState, writer: Writer = Writer.create()): Writer {
-    if (message.did_method !== "") {
-      writer.uint32(10).string(message.did_method);
-    }
-    if (message.did_namespace !== "") {
-      writer.uint32(18).string(message.did_namespace);
+    if (message.chain_namespace !== "") {
+      writer.uint32(10).string(message.chain_namespace);
     }
     return writer;
   },
@@ -31,10 +26,7 @@ export const GenesisState = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.did_method = reader.string();
-          break;
-        case 2:
-          message.did_namespace = reader.string();
+          message.chain_namespace = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -46,38 +38,33 @@ export const GenesisState = {
 
   fromJSON(object: any): GenesisState {
     const message = { ...baseGenesisState } as GenesisState;
-    if (object.did_method !== undefined && object.did_method !== null) {
-      message.did_method = String(object.did_method);
+    if (
+      object.chain_namespace !== undefined &&
+      object.chain_namespace !== null
+    ) {
+      message.chain_namespace = String(object.chain_namespace);
     } else {
-      message.did_method = "";
-    }
-    if (object.did_namespace !== undefined && object.did_namespace !== null) {
-      message.did_namespace = String(object.did_namespace);
-    } else {
-      message.did_namespace = "";
+      message.chain_namespace = "";
     }
     return message;
   },
 
   toJSON(message: GenesisState): unknown {
     const obj: any = {};
-    message.did_method !== undefined && (obj.did_method = message.did_method);
-    message.did_namespace !== undefined &&
-      (obj.did_namespace = message.did_namespace);
+    message.chain_namespace !== undefined &&
+      (obj.chain_namespace = message.chain_namespace);
     return obj;
   },
 
   fromPartial(object: DeepPartial<GenesisState>): GenesisState {
     const message = { ...baseGenesisState } as GenesisState;
-    if (object.did_method !== undefined && object.did_method !== null) {
-      message.did_method = object.did_method;
+    if (
+      object.chain_namespace !== undefined &&
+      object.chain_namespace !== null
+    ) {
+      message.chain_namespace = object.chain_namespace;
     } else {
-      message.did_method = "";
-    }
-    if (object.did_namespace !== undefined && object.did_namespace !== null) {
-      message.did_namespace = object.did_namespace;
-    } else {
-      message.did_namespace = "";
+      message.chain_namespace = "";
     }
     return message;
   },

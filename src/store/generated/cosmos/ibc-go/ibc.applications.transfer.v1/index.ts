@@ -1,11 +1,10 @@
 import { txClient, queryClient, MissingWalletError , registry} from './module'
 
-import { FungibleTokenPacketData } from "./module/types/ibc/applications/transfer/v1/transfer"
 import { DenomTrace } from "./module/types/ibc/applications/transfer/v1/transfer"
 import { Params } from "./module/types/ibc/applications/transfer/v1/transfer"
 
 
-export { FungibleTokenPacketData, DenomTrace, Params };
+export { DenomTrace, Params };
 
 async function initTxClient(vuexGetters) {
 	return await txClient(vuexGetters['common/wallet/signer'], {
@@ -46,9 +45,10 @@ const getDefaultState = () => {
 				DenomTrace: {},
 				DenomTraces: {},
 				Params: {},
+				DenomHash: {},
+				EscrowAddress: {},
 				
 				_Structure: {
-						FungibleTokenPacketData: getStructure(FungibleTokenPacketData.fromPartial({})),
 						DenomTrace: getStructure(DenomTrace.fromPartial({})),
 						Params: getStructure(Params.fromPartial({})),
 						
@@ -96,6 +96,18 @@ export default {
 						(<any> params).query=null
 					}
 			return state.Params[JSON.stringify(params)] ?? {}
+		},
+				getDenomHash: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.DenomHash[JSON.stringify(params)] ?? {}
+		},
+				getEscrowAddress: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.EscrowAddress[JSON.stringify(params)] ?? {}
 		},
 				
 		getTypeStructure: (state) => (type) => {
@@ -196,6 +208,50 @@ export default {
 				return getters['getParams']( { params: {...key}, query}) ?? {}
 			} catch (e) {
 				throw new Error('QueryClient:QueryParams API Node Unavailable. Could not perform query: ' + e.message)
+				
+			}
+		},
+		
+		
+		
+		
+		 		
+		
+		
+		async QueryDenomHash({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+			try {
+				const key = params ?? {};
+				const queryClient=await initQueryClient(rootGetters)
+				let value= (await queryClient.queryDenomHash( key.trace)).data
+				
+					
+				commit('QUERY', { query: 'DenomHash', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryDenomHash', payload: { options: { all }, params: {...key},query }})
+				return getters['getDenomHash']( { params: {...key}, query}) ?? {}
+			} catch (e) {
+				throw new Error('QueryClient:QueryDenomHash API Node Unavailable. Could not perform query: ' + e.message)
+				
+			}
+		},
+		
+		
+		
+		
+		 		
+		
+		
+		async QueryEscrowAddress({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+			try {
+				const key = params ?? {};
+				const queryClient=await initQueryClient(rootGetters)
+				let value= (await queryClient.queryEscrowAddress( key.channel_id,  key.port_id)).data
+				
+					
+				commit('QUERY', { query: 'EscrowAddress', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryEscrowAddress', payload: { options: { all }, params: {...key},query }})
+				return getters['getEscrowAddress']( { params: {...key}, query}) ?? {}
+			} catch (e) {
+				throw new Error('QueryClient:QueryEscrowAddress API Node Unavailable. Could not perform query: ' + e.message)
 				
 			}
 		},

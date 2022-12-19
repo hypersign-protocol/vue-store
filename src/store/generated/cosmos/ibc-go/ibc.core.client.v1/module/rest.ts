@@ -517,6 +517,21 @@ export interface V1QueryClientStatusResponse {
   status?: string;
 }
 
+export interface V1QueryConsensusStateHeightsResponse {
+  consensus_state_heights?: V1Height[];
+
+  /**
+   * PageResponse is to be embedded in gRPC response messages where the
+   * corresponding request message has used PageRequest.
+   *
+   *  message SomeResponse {
+   *          repeated Bar results = 1;
+   *          PageResponse page = 2;
+   *  }
+   */
+  pagination?: V1Beta1PageResponse;
+}
+
 export interface V1QueryConsensusStateResponse {
   /**
    * `Any` contains an arbitrary serialized protocol buffer message along with a
@@ -1163,6 +1178,32 @@ client.
   ) =>
     this.request<V1QueryConsensusStatesResponse, RpcStatus>({
       path: `/ibc/core/client/v1/consensus_states/${client_id}`,
+      method: "GET",
+      query: query,
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryConsensusStateHeights
+   * @summary ConsensusStateHeights queries the height of every consensus states associated with a given client.
+   * @request GET:/ibc/core/client/v1/consensus_states/{client_id}/heights
+   */
+  queryConsensusStateHeights = (
+    client_id: string,
+    query?: {
+      "pagination.key"?: string;
+      "pagination.offset"?: string;
+      "pagination.limit"?: string;
+      "pagination.count_total"?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<V1QueryConsensusStateHeightsResponse, RpcStatus>({
+      path: `/ibc/core/client/v1/consensus_states/${client_id}/heights`,
       method: "GET",
       query: query,
       format: "json",
