@@ -182,6 +182,7 @@ export interface SsiVerificationMethod {
   type?: string;
   controller?: string;
   publicKeyMultibase?: string;
+  blockchainAccountId?: string;
 }
 
 /**
